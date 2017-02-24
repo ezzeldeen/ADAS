@@ -1,41 +1,68 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb 07 04:55:15 2017
 
-@author: MoHassan
-"""
-
-import vrep
+#import vrep
 import sys
-vrep.simxFinish(-1) # just in case, close all opened connections
-clientID=vrep.simxStart('127.0.0.1',19999,True,True,5000,5) # Connect to V-REP
-if clientID!=-1:
-    print ('Connected to remote API server')
-else:
-	print ('connection not successful')
-	#sys.exit('could no connect')
+import numpy as np
+import timeit
+import math
+maxRadarDist= 15  
+deltaX=maxRadarDist/3   # at point B
+safeDistance=(maxRadarDist/3)*2 # at point A
+desiredSpeed=50/float(3)
+car1Speed=desiredSpeed
+detectedState=True
+detectedDistance=130
+setSpeed=desiredSpeed #initialy, current speed= desiredSpeed
+# point A : leading car, point C: myCar, point B: deltaX
+start = timeit.default_timer()
 
-errorCode,left_motor_handle=vrep.simxGetObjectHandle(clientID,'car1_leftMotor',vrep.simx_opmode_oneshot_wait)
-errorCode,right_motor_handle=vrep.simxGetObjectHandle(clientID,'car1_rightMotor',vrep.simx_opmode_oneshot_wait)
+c = 0
+while 1:
+    c += 1
+    if c == 10000:
+        break
+
+stop = timeit.default_timer()
+print stop - start
 
 
-desiredSpeed=5
-safetyDistance=1 # 1 meter
+counter=0
+while 1:
+    #TODO: each iteration update detectedState & detectedDistance
+    #TODO: Check if it is the same object or has been changed
+    if detectedState==False:
+        counter=0   #do nothing
+    else:
+        counter +=1
+        #calc. dist
+        if counter ==1:
+            d1=detectedDistance
+            time1 = timeit.default_timer()
+        #calc. velocity of car2
+        elif counter>=2:
+            #TODO read d2 from RADAR not by calculations
+            d2 = detectedDistance-5
+            #DELAY
+            ##############
+            c = 0
+            while 1:
+                c += 1
+                if c == 10000:
+                    break
+            ##############
+            time2 = timeit.default_timer()
+            print time2-time1
+            car2Speed=(d2-d1)/float(time2-time1)+car1Speed #final velocity (car2 velocity)
+            if (car2Speed<car1Speed):
+                # calc. acceleration
+                acceleration = (float)(math.pow(car2Speed,2) - math.pow(car1Speed,2)) / (2*(d2))
 
-# to make it steering 
-errorCode=vrep.simxSetJointTargetVelocity(clientID,left_motor_handle,desiredSpeed,vrep.simx_opmode_streaming)
-errorCode=vrep.simxSetJointTargetVelocity(clientID,right_motor_handle,desiredSpeed,vrep.simx_opmode_streaming)
-#errorCode=vrep.simxSetJointTargetVelocity(clientID,left_motor_handle,1.5,vrep.simx_opmode_streaming)
-## inifinty loop
-while 1 :
-    # DETERMINE distance bet. 2 cars -> call it diffDistance
-    # determine speed of the second car
-    ### case 1 : danger case
-    # if (diffDistance < safetyDistance && car2Speed < car1speed)
-    # then -> make decelerare car1
-    ### case 2 : not danger
-    # else if (diffDistance< safetyDistance && car2Speed > car1speed)
-    # then -> set car1Speed to desired speed
-    
-s = 2
-print s
+
+"""
+    ### CASE 1 : myCar bet. point B and C
+    if (detectedDistance > deltaX && detectedDistance < maxRadarDist):
+        s=maxRadarDist-detectedDistance
+        setSpeed=(setSpeed^2)-((2*a*s)^0.5)
+"""
+
+
+
