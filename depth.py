@@ -37,12 +37,20 @@ if ret == True:
 
 T=None
 R= None
-print (camera_matrix1)
-retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F=cv2.stereoCalibrate(objpoints, imgpoints1, imgpoints1,   camera_matrix1, dist_coefs1, camera_matrix1, dist_coefs1,gray.shape[::-1], R, T, E=None, F=None, flags=cv2.CALIB_FIX_INTRINSIC,criteria=(cv2.TermCriteria_MAX_ITER+cv2.TermCriteria_EPS, 30, 1e-6) )
-print (cameraMatrix1)
-print (cameraMatrix2)
-
-print (R)
+retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F=cv2.stereoCalibrate(objpoints, imgpoints1, imgpoints1,   camera_matrix1, dist_coefs1, camera_matrix1, dist_coefs1,gray.shape[::-1], R, T, E=None, F=None, flags=cv2.CALIB_FIX_INTRINSIC,criteria=(cv2.TermCriteria_MAX_ITER+cv2.TermCriteria_EPS, 30, 1e-6))
+R1=None
+R2=None
+P1=None
+P2=None
+Q=None
+R1,R2,P1,P2,Q,unKnown1,unKnown2=cv2.stereoRectify(cameraMatrix1,distCoeffs1,cameraMatrix2,distCoeffs2,gray.shape[::-1],R,T,R1,R2,P1,P2,Q,flags=cv2.CALIB_ZERO_DISPARITY,alpha=1,newImageSize= None)
+print ("unKnown2 :",unKnown2)
+print ("R1: ", R1)
+print ("R2: ", R2)
+print ("unKnown1 : ", unKnown1)
+print ("P1: ", P1)
+print ("P2: ", P2)
+print ("Q : ", Q)
 """
 imgR = cv2.imread('1.jpg',0)
 imgL = cv2.imread('2.jpg',0)
