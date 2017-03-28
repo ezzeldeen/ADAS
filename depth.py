@@ -44,20 +44,15 @@ P1=None
 P2=None
 Q=None
 R1,R2,P1,P2,Q,unKnown1,unKnown2=cv2.stereoRectify(cameraMatrix1,distCoeffs1,cameraMatrix2,distCoeffs2,gray.shape[::-1],R,T,R1,R2,P1,P2,Q,flags=cv2.CALIB_ZERO_DISPARITY,alpha=1,newImageSize= None)
-print ("unKnown2 :",unKnown2)
-print ("R1: ", R1)
-print ("R2: ", R2)
-print ("unKnown1 : ", unKnown1)
-print ("P1: ", P1)
-print ("P2: ", P2)
-print ("Q : ", Q)
-"""
+
 imgR = cv2.imread('1.jpg',0)
 imgL = cv2.imread('2.jpg',0)
 stereo = cv2.StereoBM_create(numDisparities=32, blockSize=21)
 disparity = stereo.compute(imgL,imgR)
 
-cv2.namedWindow('1', cv2.WINDOW_NORMAL) #show normal window
+points = cv2.reprojectImageTo3D(disparity, Q)
+
+cv2.namedWindow('1.jpg', cv2.WINDOW_NORMAL) #show normal window
 cv2.imshow('1.jpg', imgR)
 
 plt.imshow(disparity,'gray')
@@ -65,4 +60,3 @@ plt.show()
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-"""
