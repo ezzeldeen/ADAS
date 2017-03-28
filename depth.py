@@ -29,9 +29,7 @@ if ret == True:
     # Draw and display the corners
     trial = cv2.drawChessboardCorners(img, (7,6), corners2,ret)
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
-    h,  w = img.shape[:2]
-    newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx,dist,(w,h),1,(w,h))
-	
+    
 #cv2.destroyAllWindows()
 
 
