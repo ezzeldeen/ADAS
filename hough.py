@@ -36,7 +36,7 @@ def drawLane (Lines,img) :
     
 frame = 0
 while (frame < 33 ) :
-    img = cv2.imread(str(frame)+'.png',1)
+    img = cv2.imread("images/"+str(frame)+'.png',1)
     frame += 1
     edges=cv2.Canny(img,10,300)
     height = img.shape[0]

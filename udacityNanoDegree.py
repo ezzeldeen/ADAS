@@ -18,7 +18,7 @@ def region_of_interest(img, vertices):
     masked_img = cv2.bitwise_and(img, mask)
     return masked_img
 
-img = cv2.imread('udacity.png',1)
+img = cv2.imread('images/udacity.png',1)
 
 #first path
 gray_img = cv2.cvtColor(img , cv2.COLOR_RGB2GRAY)

@@ -26,7 +26,7 @@ def region_of_interest(img, vertices):
     return masked_image
 
 
-img = cv2.imread('13.png')
+img = cv2.imread('images/udacity.png')
 gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 img = cv2.GaussianBlur(gray_image,(3,3),0)
 
