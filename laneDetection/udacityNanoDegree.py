@@ -125,25 +125,13 @@ image = cv2.HoughLinesP(image,1,np.pi/90,10,np.array([]),15,110)
 line_img = np.zeros((image.shape),dtype=np.uint8)
 draw_lines(line_img,image,thickness=7)
 out = weighted_img(image,img,bita=250.)
-#sobelx = cv2.Sobel(gray_img,cv2.CV_64F,1,0,ksize=5)
-#sobelx = sobelx.astype(np.uint8)
-#ret,th1 = cv2.threshold(sobelx,30,150,cv2.THRESH_BINARY)
 
-#second path
-#HLS_img = cv2.cvtColor(img , cv2.COLOR_RGB2HLS)
-#s_channel = HLS_img[:,:,1]
-#mask = cv2.inRange(s_channel,130,270)
-#masked_image = cv2.bitwise_and(th1, mask)
 #src = np.array([[340,280],[430,280],[670,410],[175,410]],np.float32)
-#ss = np.array([[[340,280],[430,280],[670,410],[175,410]]],np.int32)
 #dst = np.array([[150,0],[550,0],[550,630],[150,630]],np.float32)
-#test = region_of_interest(masked_image,ss)
 #M = cv2.getPerspectiveTransform(src, dst)
 #warp = cv2.warpPerspective(test.copy(), M, (800, 600))
 
 cv2.imshow("out",image)
-#cv2.imshow("original",masked_image)
-#cv2.imshow("warp",warp)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
