@@ -17,7 +17,7 @@ def region_of_interest(img, vertices):
     #returning the image only where mask pixels are nonzero
     masked_img = cv2.bitwise_and(img, mask)
     return masked_img
-
+    
 img = cv2.imread('images/udacity.png',1)
 
 #first path
@@ -30,17 +30,17 @@ ret,th1 = cv2.threshold(sobelx,30,150,cv2.THRESH_BINARY)
 HLS_img = cv2.cvtColor(img , cv2.COLOR_RGB2HLS)
 s_channel = HLS_img[:,:,1]
 mask = cv2.inRange(s_channel,130,270)
-
 masked_image = cv2.bitwise_and(th1, mask)
-src = np.array([[350,250],[100,450],[700,450],[450,250]],np.float32)
-dst = np.array([[0,0],[0,600],[600,600],[600,0]],np.float32)
-ss = np.array([[[350,250],[100,450],[700,450],[450,250]]],np.int32)
-
+src = np.array([[340,280],[430,280],[670,410],[175,410]],np.float32)
+ss = np.array([[[340,280],[430,280],[670,410],[175,410]]],np.int32)
+dst = np.array([[150,0],[550,0],[550,630],[150,630]],np.float32)
 test = region_of_interest(masked_image,ss)
 M = cv2.getPerspectiveTransform(src, dst)
-warp = cv2.warpPerspective(masked_image.copy(), M, (600, 600))
-cv2.imshow("warp",test)
-cv2.imshow("output",warp)
+warp = cv2.warpPerspective(test.copy(), M, (800, 600))
+
+cv2.imshow("masked",test)
+#cv2.imshow("original",masked_image)
+cv2.imshow("warp",warp)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
