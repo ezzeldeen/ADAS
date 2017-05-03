@@ -52,7 +52,14 @@ def magnitude_threshold (sobelx ,sobely):
     binary_out [(gradientMag>50) & (gradientMag<255)] =1    
     return binary_out
     
-
+def warp_image (img , src , dst ):
+    M = cv2.getPerspectiveTransform(src, dst)
+    return cv2.warpPerspective(img ,M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
+    
+def unwarp_image (img , src ,dst):
+     M = cv2.getPerspectiveTransform(dst,src)
+     return cv2.warpPerspective(img ,M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
+    
 def slope(line):
     return (float(line[3]) - line[1]) / (float(line[2]) - line[0])
 
@@ -141,31 +148,12 @@ combined[(( color == 1) & (( mag == 1 ) | ( dirc == 1)))] = 1
 #perspective transform
 src = np.float32([[430, 330],[520, 330],[900, 540],[150, 540]])
 dst = np.float32([[150, 0],[900, 0], [900, 540], [150, 540]])
-M = cv2.getPerspectiveTransform(src, dst)
-o = cv2.warpPerspective(combined ,M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
+warped = warp_image(combined,src,dst)
+unwarped = unwarp_image(warped,src,dst)
 
-#apply canny edge detection
-image = cv2.Canny(image,30,130)
 
-#region of interest
-height,width=img.shape[:2]
-s = np.array([[[40,height],[width/2,height/2+40],[width/2,height/2 +40],[width-40,height]]],np.int32)
-image = region_of_interest(image,s)
-
-#run hough transform
-image = cv2.HoughLinesP(image,1,np.pi/90,10,np.array([]),15,110)
-line_img = np.zeros_like(image)
-#draw_lines(line_img,image,thickness=7)
-#out = weighted_img(image,img,bita=250.)
-
-#src = np.array([[340,280],[430,280],[670,410],[175,410]],np.float32)
-#dst = np.array([[150,0],[550,0],[550,630],[150,630]],np.float32)
-#M = cv2.getPerspectiveTransform(src, dst)
-#warp = cv2.warpPerspective(test.copy(), M, (800, 600))
-
-cv2.imshow("out",o)
-cv2.imshow("rr",combined)
-
+cv2.imshow("out",warped)
+cv2.imshow("rr",unwarped)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
