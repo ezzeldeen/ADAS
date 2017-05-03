@@ -33,17 +33,23 @@ img = cv2.imread('images/carLane.jpg',1)
 
 #convert image to HSV
 image = cv2.cvtColor(img , cv2.COLOR_RGB2HSV)
+
 #apply gaussian blur to remove noise
 image = cv2.GaussianBlur(image,(3,3),0)
+
 #filter image 
 image = filter_color(image)
+
 #apply canny edge detection
 image = cv2.Canny(image,30,130)
+
 #region of interest
 height,width=img.shape[:2]
 s = np.array([[[40,height],[width/2,height/2+40],[width/2,height/2 +40],[width-40,height]]],np.int32)
 image = region_of_interest(image,s)
 
+#run hough transform
+image = cv2.HoughLinesP(image,1,np.pi/90,10,np.array([]),15,110)
 #sobelx = cv2.Sobel(gray_img,cv2.CV_64F,1,0,ksize=5)
 #sobelx = sobelx.astype(np.uint8)
 #ret,th1 = cv2.threshold(sobelx,30,150,cv2.THRESH_BINARY)
