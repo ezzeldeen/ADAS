@@ -98,6 +98,9 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
     cv2.line(img, (int(left_x1), int(y1)), (int(left_x2), int(y2)), color, thickness)
     cv2.line(img, (int(right_x1), int(y1)), (int(right_x2), int(y2)), color, thickness)    
 
+def weighted_img(img, initial_img, alpha=1., bita=1., gamma=0.):
+    return cv2.addWeighted(initial_img, alpha, img,bita,gamma)
+
 img = cv2.imread('images/carLane.jpg',1)
 
 #convert image to HSV
@@ -119,6 +122,9 @@ image = region_of_interest(image,s)
 
 #run hough transform
 image = cv2.HoughLinesP(image,1,np.pi/90,10,np.array([]),15,110)
+line_img = np.zeros((image.shape),dtype=np.uint8)
+draw_lines(line_img,image,thickness=7)
+out = weighted_img(image,img,bita=250.)
 #sobelx = cv2.Sobel(gray_img,cv2.CV_64F,1,0,ksize=5)
 #sobelx = sobelx.astype(np.uint8)
 #ret,th1 = cv2.threshold(sobelx,30,150,cv2.THRESH_BINARY)
@@ -135,7 +141,7 @@ image = cv2.HoughLinesP(image,1,np.pi/90,10,np.array([]),15,110)
 #M = cv2.getPerspectiveTransform(src, dst)
 #warp = cv2.warpPerspective(test.copy(), M, (800, 600))
 
-cv2.imshow("masked",image)
+cv2.imshow("out",image)
 #cv2.imshow("original",masked_image)
 #cv2.imshow("warp",warp)
 cv2.waitKey(0)
