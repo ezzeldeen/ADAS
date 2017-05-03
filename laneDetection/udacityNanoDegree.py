@@ -17,11 +17,26 @@ def region_of_interest(img, vertices):
     #returning the image only where mask pixels are nonzero
     masked_img = cv2.bitwise_and(img, mask)
     return masked_img
-    
-img = cv2.imread('images/udacity.png',1)
 
-#first path
-gray_img = cv2.cvtColor(img , cv2.COLOR_RGB2GRAY)
+def filter_color(img):
+    yellow_min = np.array([65, 80, 80], np.uint8)
+    yellow_max = np.array([105, 255, 255], np.uint8)
+    yellow_mask = cv2.inRange(img, yellow_min, yellow_max)
+    white_min = np.array([0, 0, 200], np.uint8)
+    white_max = np.array([255, 80, 255], np.uint8)
+    white_mask = cv2.inRange(img, white_min, white_max)
+    img = cv2.bitwise_and(img, img, mask=cv2.bitwise_or(yellow_mask, white_mask))
+    return img
+
+    
+img = cv2.imread('images/carLane.jpg',1)
+
+#convert image to HSV
+HSV_img = cv2.cvtColor(img , cv2.COLOR_RGB2HSV)
+#apply gaussian blur to remove noise
+blured_img = cv2.GaussianBlur(HSV_img,(3,3),0)
+#filter image 
+filtered_img = filter_color(blured_img)
 sobelx = cv2.Sobel(gray_img,cv2.CV_64F,1,0,ksize=5)
 sobelx = sobelx.astype(np.uint8)
 ret,th1 = cv2.threshold(sobelx,30,150,cv2.THRESH_BINARY)
