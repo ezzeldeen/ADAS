@@ -30,8 +30,28 @@ def filter_color(img):
     white_min = np.array([0, 0, 200], np.uint8)
     white_max = np.array([255, 80, 255], np.uint8)
     white_mask = cv2.inRange(img, white_min, white_max)
-    img = cv2.bitwise_and(img, img, mask=cv2.bitwise_or(yellow_mask, white_mask))
-    return img
+    binary_output = np.zeros_like(img[:, :, 0])
+    binary_output[((yellow_mask != 0) | (white_mask != 0))] = 1
+    filtered = img
+    filtered[((yellow_mask == 0) & (white_mask == 0))] = 0
+    return binary_output
+
+def dir_threshold (sobelx ,sobely):
+    abs_sobelx = np.abs(sobelx)
+    abs_sobely = np.abs(sobely)
+    angles = np.arctan2(abs_sobelx,abs_sobely)
+    sbinary = np.zeros_like(angles)
+    sbinary[(angles > 0.7) & (angles < 1.2)] = 1
+    return sbinary
+
+def magnitude_threshold (sobelx ,sobely):
+    gradientMag = np.sqrt(sobelx**2 + sobely**2)
+    factor = np.max(gradientMag)/255
+    gradientMag = (gradientMag/factor).astype(np.uint8)
+    binary_out = np.zeros_like(gradientMag)
+    binary_out [(gradientMag>50) & (gradientMag<255)] =1    
+    return binary_out
+    
 
 def slope(line):
     return (float(line[3]) - line[1]) / (float(line[2]) - line[0])
@@ -110,7 +130,15 @@ image = cv2.cvtColor(img , cv2.COLOR_RGB2HSV)
 image = cv2.GaussianBlur(image,(3,3),0)
 
 #filter image 
-image = filter_color(image)
+sobelx = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 1, 0, ksize=15)
+sobely = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 0, 1, ksize=15)
+dirc = dir_threshold(sobelx, sobely)
+mag = magnitude_threshold (sobelx ,sobely)
+color = filter_color(image)
+combined = np.zeros_like(dirc)
+combined[(( color == 1) & (( mag == 1 ) | ( dirc == 1)))] = 1
+
+
 
 #apply canny edge detection
 image = cv2.Canny(image,30,130)
@@ -122,16 +150,16 @@ image = region_of_interest(image,s)
 
 #run hough transform
 image = cv2.HoughLinesP(image,1,np.pi/90,10,np.array([]),15,110)
-line_img = np.zeros((image.shape),dtype=np.uint8)
-draw_lines(line_img,image,thickness=7)
-out = weighted_img(image,img,bita=250.)
+line_img = np.zeros_like(image)
+#draw_lines(line_img,image,thickness=7)
+#out = weighted_img(image,img,bita=250.)
 
 #src = np.array([[340,280],[430,280],[670,410],[175,410]],np.float32)
 #dst = np.array([[150,0],[550,0],[550,630],[150,630]],np.float32)
 #M = cv2.getPerspectiveTransform(src, dst)
 #warp = cv2.warpPerspective(test.copy(), M, (800, 600))
 
-cv2.imshow("out",image)
+cv2.imshow("out",combined)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
