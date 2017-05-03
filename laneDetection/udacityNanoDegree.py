@@ -138,7 +138,11 @@ color = filter_color(image)
 combined = np.zeros_like(dirc)
 combined[(( color == 1) & (( mag == 1 ) | ( dirc == 1)))] = 1
 
-
+#perspective transform
+src = np.float32([[430, 330],[520, 330],[900, 540],[150, 540]])
+dst = np.float32([[150, 0],[900, 0], [900, 540], [150, 540]])
+M = cv2.getPerspectiveTransform(src, dst)
+o = cv2.warpPerspective(combined ,M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
 
 #apply canny edge detection
 image = cv2.Canny(image,30,130)
@@ -159,7 +163,9 @@ line_img = np.zeros_like(image)
 #M = cv2.getPerspectiveTransform(src, dst)
 #warp = cv2.warpPerspective(test.copy(), M, (800, 600))
 
-cv2.imshow("out",combined)
+cv2.imshow("out",o)
+cv2.imshow("rr",combined)
+
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
