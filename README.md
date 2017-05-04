@@ -2,8 +2,8 @@
 
 # Lane Detection
    Real time lane detection
- 
-![alt text](https://github.com/ezzeldeen/ADAS/tree/master/laneDetection/images/3.png)
+   
+![alt text](https://github.com/ezzeldeen/ADAS/blob/master/laneDetection/images/output.png)
 
-# Run detector
-      python hough.py
+   # Run detector
+         python advancedLaneDetection.py
