@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 def search_for_lane(img):
+    out_img = np.dstack((img, img, img)) * 255
     histogram = np.sum(img[int( img.shape[0] / 2 ):, :],axis =0) 
     mid_point = np.int( histogram.shape[0]/2 )
     left_point = np.argmax(histogram[:mid_point])
@@ -24,7 +25,12 @@ def search_for_lane(img):
         win_x_left_high = current_left + margin        
         win_x_right_low = current_right -  margin        
         win_x_right_high = current_right + margin
-        cv2.rectangle(img,(win_x_left_low,win_y_low),(win_x_left_high,win_y_high) ,(0,0,255),2)
-        cv2.rectangle(img,(win_x_right_low,win_y_low),(win_x_right_high,win_y_high) ,(0,0,255),2)
-        
+        cv2.rectangle(out_img,(win_x_left_low,win_y_low),(win_x_left_high,win_y_high) ,(0,255,0),2)
+        cv2.rectangle(out_img,(win_x_right_low,win_y_low),(win_x_right_high,win_y_high) ,(0,0,255),2)
+        cv2.imshow("test",img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    return
+
+   
     
