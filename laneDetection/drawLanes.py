@@ -9,11 +9,12 @@ def draw (img, leftx, left_fit, rightx, right_fit, src, dst ):
     right = right_fit[0] * y **2 + right_fit[1] * y + right_fit[2]
     
     pts_left = np.array([np.transpose(np.vstack([left,y]))])
-    pts_right = np.array([np.flipud(np.vstack([right,y]))])
+    pts_right = np.array([np.flipud(np.transpose(np.vstack([right,y])))])
     pts = np.hstack((pts_left,pts_right))
     pts = np.array(pts,dtype=np.int32)
     cv2.fillPoly(colored_warp,pts,(0,255,0))
     M = cv2.getPerspectiveTransform(dst,src)
     unwarped = cv2.warpPerspective(colored_warp ,M, (colored_warp.shape[1], colored_warp.shape[0]), flags=cv2.INTER_LINEAR)
-    return unwarped
+    result = cv2.addWeighted(img, 1, unwarped, 0.3, 0)    
+    return result
     
