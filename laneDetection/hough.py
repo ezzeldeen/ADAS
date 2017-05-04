@@ -52,6 +52,6 @@ while (frame < 33 ) :
     drawLane(lines,img)
     cv2.imshow("a",img)
     cv2.waitKey(1)
-    time.sleep(0.5)
+    #time.sleep(0.5)
 cv2.destroyAllWindows()
 print("--- %s seconds ---" % (time.time() - start_time))
