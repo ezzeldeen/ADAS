@@ -3,4 +3,4 @@ AdvancedLaneDetection.py
 roi.py
 SanFrancisco.jpg
 advan.png
-findingLanes.pyc
+*.pyc
