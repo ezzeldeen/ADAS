@@ -1,6 +1,5 @@
 import cv2
 import numpy as np 
-import advancedLaneDetetion as f
 
 def draw (img, leftx, left_fit, rightx, right_fit, src, dst ):
     
@@ -14,6 +13,7 @@ def draw (img, leftx, left_fit, rightx, right_fit, src, dst ):
     pts = np.hstack((pts_left,pts_right))
     pts = np.array(pts,dtype=np.int32)
     cv2.fillPoly(colored_warp,pts,(0,255,0))
-    unwarped =  f.unwarp_image(colored_warp,src,dst)
+    M = cv2.getPerspectiveTransform(dst,src)
+    unwarped = cv2.warpPerspective(colored_warp ,M, (colored_warp.shape[1], colored_warp.shape[0]), flags=cv2.INTER_LINEAR)
     return unwarped
     
