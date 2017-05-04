@@ -48,7 +48,7 @@ def slope(line):
 def weighted_img(img, initial_img, alpha=1., bita=1., gamma=0.):
     return cv2.addWeighted(initial_img, alpha, img,bita,gamma)
 
-img = cv2.imread('images/carLane.jpg',1)
+img = cv2.imread('images/undistorted.jpg',1)
 
 #convert image to HSV
 image = cv2.cvtColor(img , cv2.COLOR_RGB2HSV)
@@ -66,8 +66,14 @@ combined = np.zeros_like(dirc)
 combined[(( color == 1) & (( mag == 1 ) | ( dirc == 1)))] = 1
 
 #perspective transform
-src = np.float32([[430, 330],[520, 330],[900, 540],[150, 540]])
-dst = np.float32([[150, 0],[900, 0], [900, 540], [150, 540]])
+src = np.float32([[580, 460],
+            [700, 460],
+            [1040, 680],
+            [260, 680]])
+dst = np.float32([ [260, 0],
+            [1040, 0],
+            [1040, 720],
+            [260, 720]])
 warped = warp_image(combined,src,dst)
 unwarped = unwarp_image(warped,src,dst)
 lx,lxf,rx,rxf =fl.search_for_lane(warped)
