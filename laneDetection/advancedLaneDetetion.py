@@ -4,23 +4,6 @@ import findingLanes as fl
 import drawLanes as dr
 import time 
 start_time = time.time()
-def region_of_interest(img, vertices):    
-    #defining a blank mask to start with
-    mask = np.zeros_like(img)       
-    #defining a 3 channel or 1 channel color to fill the mask with depending on the input image
-    if len(img.shape) > 2:
-        channel_count = img.shape[2]  # i.e. 3 or 4 depending on your image
-        ignore_mask_color = (255,) * channel_count
-    else:
-        ignore_mask_color = 255
-        
-    #filling pixels inside the polygon defined by "vertices" with the fill color    
-    cv2.fillPoly(mask, vertices, ignore_mask_color)
-    
-    #returning the image only where mask pixels are nonzero
-    masked_image = cv2.bitwise_and(img, mask)
-    cv2.imshow("b",masked_image)    
-    return masked_image
 
 def filter_color(img):
     yellow_min = np.array([65, 80, 80], np.uint8)
@@ -102,7 +85,6 @@ while(frame < 33 ):
                     [width/3, 3*height/8],
                     [40, height],
                     [width - 40, height]]], dtype=np.int32 )
-    test= region_of_interest(img,vertices)            
     warped = warp_image(combined,src,dst)
     unwarped = unwarp_image(warped,src,dst)
     lx,lxf,rx,rxf =fl.search_for_lane(warped)
