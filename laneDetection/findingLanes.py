@@ -44,7 +44,7 @@ def search_for_lane(img):
     lefty = nonzeroy[left_lane]
     righty = nonzeroy[right_lane]
     left_fit = np.polyfit(lefty,leftx,2)
-    right_fit = np.poly(righty,rightx,2)
+    right_fit = np.polyfit(righty,rightx,2)
 
     return leftx,left_fit,rightx,right_fit    
         
