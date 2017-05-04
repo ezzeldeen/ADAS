@@ -4,4 +4,4 @@ roi.py
 SanFrancisco.jpg
 advan.png
 *.pyc
-images/vids
+images/vids/*
