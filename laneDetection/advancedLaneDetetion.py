@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import findingLanes as fl
 import drawLanes as dr
-
+import time 
+start_time = time.time()
 def region_of_interest(img, vertices):    
     #defining a blank mask to start with
     mask = np.zeros_like(img)       
@@ -25,8 +26,8 @@ def filter_color(img):
     yellow_min = np.array([65, 80, 80], np.uint8)
     yellow_max = np.array([105, 255, 255], np.uint8)
     yellow_mask = cv2.inRange(img, yellow_min, yellow_max)
-    white_min = np.array([30, 20, 130], np.uint8)
-    white_max = np.array([255, 80, 255], np.uint8)
+    white_min = np.array([20, 30, 80], np.uint8)
+    white_max = np.array([255, 255, 255], np.uint8)
     white_mask = cv2.inRange(img, white_min, white_max)
     binary_output = np.zeros_like(img[:, :, 0])
     binary_output[((yellow_mask != 0) | (white_mask != 0))] = 1
@@ -89,16 +90,19 @@ while(frame < 33 ):
                 [370, 205],
                 [470, 330],
                 [190, 330]])
-    dst = np.float32([[100, 100],
-                [540, 100],
-                [540, 470],
-                [100, 470]])
+    dst = np.float32([[60, 20],
+                [600, 20],
+                [600, 470],
+                [60, 470]])
     
-    s = np.int32([[[280, 205],
-                [370, 205],
-                [470, 330],
-                [190, 330]]])
-    test= region_of_interest(img,s)            
+    height = img.shape[0]
+    width = img.shape[1]
+    vertices = np.array([[
+                    [2*width/3, 3*height/8],
+                    [width/3, 3*height/8],
+                    [40, height],
+                    [width - 40, height]]], dtype=np.int32 )
+    test= region_of_interest(img,vertices)            
     warped = warp_image(combined,src,dst)
     unwarped = unwarp_image(warped,src,dst)
     lx,lxf,rx,rxf =fl.search_for_lane(warped)
@@ -106,5 +110,6 @@ while(frame < 33 ):
     cv2.imshow("out",o)
     cv2.waitKey(1)
 cv2.destroyAllWindows()
-    
+print("--- %s seconds ---" % (time.time() - start_time))
+
     
