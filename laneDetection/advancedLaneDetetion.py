@@ -3,12 +3,29 @@ import numpy as np
 import findingLanes as fl
 import drawLanes as dr
 
+def region_of_interest(img, vertices):    
+    #defining a blank mask to start with
+    mask = np.zeros_like(img)       
+    #defining a 3 channel or 1 channel color to fill the mask with depending on the input image
+    if len(img.shape) > 2:
+        channel_count = img.shape[2]  # i.e. 3 or 4 depending on your image
+        ignore_mask_color = (255,) * channel_count
+    else:
+        ignore_mask_color = 255
+        
+    #filling pixels inside the polygon defined by "vertices" with the fill color    
+    cv2.fillPoly(mask, vertices, ignore_mask_color)
+    
+    #returning the image only where mask pixels are nonzero
+    masked_image = cv2.bitwise_and(img, mask)
+    cv2.imshow("b",masked_image)    
+    return masked_image
 
 def filter_color(img):
     yellow_min = np.array([65, 80, 80], np.uint8)
     yellow_max = np.array([105, 255, 255], np.uint8)
     yellow_mask = cv2.inRange(img, yellow_min, yellow_max)
-    white_min = np.array([0, 0, 200], np.uint8)
+    white_min = np.array([30, 20, 130], np.uint8)
     white_max = np.array([255, 80, 255], np.uint8)
     white_mask = cv2.inRange(img, white_min, white_max)
     binary_output = np.zeros_like(img[:, :, 0])
@@ -48,39 +65,46 @@ def slope(line):
 def weighted_img(img, initial_img, alpha=1., bita=1., gamma=0.):
     return cv2.addWeighted(initial_img, alpha, img,bita,gamma)
 
-img = cv2.imread('images/undistorted.jpg',1)
-
-#convert image to HSV
-image = cv2.cvtColor(img , cv2.COLOR_RGB2HSV)
-
-#apply gaussian blur to remove noise
-image = cv2.GaussianBlur(image,(3,3),0)
-
-#filter image 
-sobelx = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 1, 0, ksize=15)
-sobely = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 0, 1, ksize=15)
-dirc = dir_threshold(sobelx, sobely)
-mag = magnitude_threshold (sobelx ,sobely)
-color = filter_color(image)
-combined = np.zeros_like(dirc)
-combined[(( color == 1) & (( mag == 1 ) | ( dirc == 1)))] = 1
-
-#perspective transform
-src = np.float32([[580, 460],
-            [700, 460],
-            [1040, 680],
-            [260, 680]])
-dst = np.float32([ [260, 0],
-            [1040, 0],
-            [1040, 720],
-            [260, 720]])
-warped = warp_image(combined,src,dst)
-unwarped = unwarp_image(warped,src,dst)
-lx,lxf,rx,rxf =fl.search_for_lane(warped)
-o = dr.draw(img,lx,lxf,rx,rxf,src,dst)
-cv2.imshow("out",o)
-#cv2.imshow("rr",unwarped)
-cv2.waitKey(0)
+frame = 1
+while(frame < 33 ):
+    img = cv2.imread('images/'+str(frame)+'.png',1)
+    frame += 1 
+    #convert image to HSV
+    image = cv2.cvtColor(img , cv2.COLOR_RGB2HSV)
+    
+    #apply gaussian blur to remove noise
+    image = cv2.GaussianBlur(image,(3,3),0)
+    
+    #filter image 
+    sobelx = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 1, 0, ksize=15)
+    sobely = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 0, 1, ksize=15)
+    dirc = dir_threshold(sobelx, sobely)
+    mag = magnitude_threshold (sobelx ,sobely)
+    color = filter_color(image)
+    combined = np.zeros_like(dirc)
+    combined[(( color == 1) & (( mag == 1 ) | ( dirc == 1)))] = 1
+    
+    #perspective transform
+    src = np.float32([[280, 205],
+                [370, 205],
+                [470, 330],
+                [190, 330]])
+    dst = np.float32([[100, 100],
+                [540, 100],
+                [540, 470],
+                [100, 470]])
+    
+    s = np.int32([[[280, 205],
+                [370, 205],
+                [470, 330],
+                [190, 330]]])
+    test= region_of_interest(img,s)            
+    warped = warp_image(combined,src,dst)
+    unwarped = unwarp_image(warped,src,dst)
+    lx,lxf,rx,rxf =fl.search_for_lane(warped)
+    o = dr.draw(img,lx,lxf,rx,rxf,src,dst)
+    cv2.imshow("out",o)
+    cv2.waitKey(1)
 cv2.destroyAllWindows()
-
-
+    
+    
