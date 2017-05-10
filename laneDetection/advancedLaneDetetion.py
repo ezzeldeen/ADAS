@@ -6,11 +6,11 @@ import time
 start_time = time.time()
 
 def filter_color(img):
-    yellow_min = np.array([65, 80, 80], np.uint8)
-    yellow_max = np.array([105, 255, 255], np.uint8)
+    yellow_min = np.array([15, 100, 120], np.uint8)
+    yellow_max = np.array([255, 255, 255], np.uint8)
     yellow_mask = cv2.inRange(img, yellow_min, yellow_max)
-    white_min = np.array([20, 30, 80], np.uint8)
-    white_max = np.array([255, 255, 255], np.uint8)
+    white_min = np.array([0, 0, 150], np.uint8)
+    white_max = np.array([255, 30, 255], np.uint8)
     white_mask = cv2.inRange(img, white_min, white_max)
     binary_output = np.zeros_like(img[:, :, 0])
     binary_output[((yellow_mask != 0) | (white_mask != 0))] = 1
@@ -48,20 +48,21 @@ def slope(line):
 
 def weighted_img(img, initial_img, alpha=1., bita=1., gamma=0.):
     return cv2.addWeighted(initial_img, alpha, img,bita,gamma)
-
-frame = 1
-while(frame < 33 ):
-    img = cv2.imread('images/'+str(frame)+'.png',1)
-    frame += 1 
+cap = cv2.VideoCapture("project_video.mp4")
+while(True):
+    
+    ret, frame = cap.read()    
     #convert image to HSV
-    image = cv2.cvtColor(img , cv2.COLOR_RGB2HSV)
+    height , width = frame.shape[:2]
+    res = cv2.resize(frame,(width/2, height/2), interpolation = cv2.INTER_CUBIC)
+    image = cv2.cvtColor(res , cv2.COLOR_RGB2HSV)
     
     #apply gaussian blur to remove noise
     image = cv2.GaussianBlur(image,(3,3),0)
     
     #filter image 
-    sobelx = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 1, 0, ksize=15)
-    sobely = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 0, 1, ksize=15)
+    sobelx = cv2.Sobel(res[:, :, 2], cv2.CV_64F, 1, 0, ksize=15)
+    sobely = cv2.Sobel(res[:, :, 2], cv2.CV_64F, 0, 1, ksize=15)
     dirc = dir_threshold(sobelx, sobely)
     mag = magnitude_threshold (sobelx ,sobely)
     color = filter_color(image)
@@ -69,28 +70,23 @@ while(frame < 33 ):
     combined[(( color == 1) & (( mag == 1 ) | ( dirc == 1)))] = 1
     
     #perspective transform
-    src = np.float32([[280, 205],
-                [370, 205],
-                [470, 330],
-                [190, 330]])
-    dst = np.float32([[60, 20],
-                [600, 20],
-                [600, 470],
-                [60, 470]])
+    src = np.float32([[290, 230],
+                [350, 230],
+                [520, 340],
+                [130, 340]])
+    dst = np.float32([[130, 0],
+                [520, 0],
+                [520, 310],
+                [130, 310]])
     
-    height = img.shape[0]
-    width = img.shape[1]
-    vertices = np.array([[
-                    [2*width/3, 3*height/8],
-                    [width/3, 3*height/8],
-                    [40, height],
-                    [width - 40, height]]], dtype=np.int32 )
     warped = warp_image(combined,src,dst)
     unwarped = unwarp_image(warped,src,dst)
     lx,lxf,rx,rxf =fl.search_for_lane(warped)
-    o = dr.draw(img,lx,lxf,rx,rxf,src,dst)
-    cv2.imshow("out",o)
-    cv2.waitKey(1)
+    o = dr.draw(res,lx,lxf,rx,rxf,src,dst)
+    cv2.imshow('frame',o)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+cap.release()
 cv2.destroyAllWindows()
 print("--- %s seconds ---" % (time.time() - start_time))
 
