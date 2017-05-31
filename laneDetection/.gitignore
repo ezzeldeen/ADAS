@@ -5,3 +5,5 @@ SanFrancisco.jpg
 advan.png
 *.pyc
 images/vid2/*.png
+output.*
+project_video.mp4
