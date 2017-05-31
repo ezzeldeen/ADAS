@@ -6,18 +6,22 @@
 
 using namespace cv ;
 
+Mat filter_color (Mat img)
+{
+    Mat yellow_mask,white_mask,combined;
+    inRange(img,Scalar(15,100,120),Scalar(255,255,255),yellow_mask);
+    inRange(img,Scalar(0,0,150),Scalar(255,30,255),white_mask);
+    combined = white_mask | yellow_mask ;
+    return combined;
+
+}
 int main()
 {
-    Mat img ;
-    img = imread("images.jpg");
-    if(! img.data )                              // Check for invalid input
-    {
-        std::cout <<  "Could not open or find the image" << std::endl ;
-        return -1;
-    }
-
+    Mat img,out ;
+    img = imread("undistorted.jpg");
+    out = filter_color(img);
     namedWindow( "test", CV_WINDOW_AUTOSIZE );
-    imshow ("test",img);
+    imshow ("test",out);
     waitKey(0);
     return 0;
 }
