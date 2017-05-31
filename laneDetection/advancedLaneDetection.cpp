@@ -15,6 +15,12 @@ Mat filter_color (Mat img)
     return combined;
 
 }
+
+Mat dir_threshold(Mat sobelx, Mat sobely)
+{
+    Mat magnitude,angles;
+    cartToPolar( sobelx, sobely, magnitude, angles);
+}
 int main()
 {
     Mat img,out ;
