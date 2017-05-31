@@ -4,6 +4,6 @@ roi.py
 SanFrancisco.jpg
 advan.png
 *.pyc
-images/vid2/*.png
+images/
 output.*
 project_video.mp4
