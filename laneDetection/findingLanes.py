@@ -47,10 +47,5 @@ def search_for_lane(img):
     right_fit = np.polyfit(righty,rightx,2)
 
     return leftx,left_fit,rightx,right_fit    
-        
-                    
-                            
-    return
-
    
     

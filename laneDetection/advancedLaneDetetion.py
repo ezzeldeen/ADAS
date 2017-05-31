@@ -49,6 +49,8 @@ def slope(line):
 def weighted_img(img, initial_img, alpha=1., bita=1., gamma=0.):
     return cv2.addWeighted(initial_img, alpha, img,bita,gamma)
 cap = cv2.VideoCapture("project_video.mp4")
+out = cv2.VideoWriter('output.avi', -1, 20.0, (640,360))
+
 while(True):
     
     ret, frame = cap.read()    
@@ -83,9 +85,11 @@ while(True):
     unwarped = unwarp_image(warped,src,dst)
     lx,lxf,rx,rxf =fl.search_for_lane(warped)
     o = dr.draw(res,lx,lxf,rx,rxf,src,dst)
+    out.write(o)
     cv2.imshow('frame',o)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+out.release()    
 cap.release()
 cv2.destroyAllWindows()
 print("--- %s seconds ---" % (time.time() - start_time))
