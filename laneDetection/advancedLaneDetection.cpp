@@ -25,14 +25,18 @@ Mat dir_threshold(Mat sobelx, Mat sobely)
     inRange(angles,0.7,1.2,outDir);
     return outDir;
 }
+
 int main()
 {
-    Mat img,out ;
+    Mat img,outColor,grad_x,grad_y,outDir ;
     img = imread("undistorted.jpg");
-    out = filter_color(img);
+    outColor = filter_color(img);
+    Sobel( outColor, grad_x, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT );
+    Sobel( outColor, grad_y, CV_64F, 0, 1, 3, 1, 0, BORDER_DEFAULT );
+    outDir = dir_threshold(grad_x,grad_y);
     namedWindow( "test", CV_WINDOW_AUTOSIZE );
     namedWindow( "original", CV_WINDOW_AUTOSIZE );
-    imshow ("test",out);
+    imshow ("test",outDir);
     imshow("original",img);
     waitKey(0);
     return 0;
