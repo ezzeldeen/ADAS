@@ -42,16 +42,17 @@ Mat magnitude_threshold(Mat sobelx , Mat sobely)
 
 int main()
 {
-    Mat img,outColor,grad_x,grad_y,outDir,outMag ;
+    Mat img,outColor,grad_x,grad_y,outDir,outMag,combined ;
     img = imread("undistorted.jpg");
     outColor = filter_color(img);
     Sobel( outColor, grad_x, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT );
     Sobel( outColor, grad_y, CV_64F, 0, 1, 3, 1, 0, BORDER_DEFAULT );
     outDir = dir_threshold(grad_x,grad_y);
     outMag = magnitude_threshold(grad_x,grad_y);
+    combined = (outColor & (outMag | outDir));
     namedWindow( "test", CV_WINDOW_AUTOSIZE );
     namedWindow( "original", CV_WINDOW_AUTOSIZE );
-    imshow ("test",outMag);
+    imshow ("test",combined);
     imshow("original",img);
     waitKey(0);
     return 0;
