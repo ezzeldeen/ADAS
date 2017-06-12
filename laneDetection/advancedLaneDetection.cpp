@@ -26,27 +26,32 @@ Mat dir_threshold(Mat sobelx, Mat sobely)
     return outDir;
 }
 
-void magnitude_threshold(Mat sobelx , Mat sobely)
+Mat magnitude_threshold(Mat sobelx , Mat sobely)
 {
-    Mat mag;
+    Mat mag,scaledMag,outMag;
     double maxValue,minValue;
     magnitude( sobelx, sobely, mag);
     minMaxLoc(mag, &minValue, &maxValue);
-    std::cout<<maxValue;
+    divide(maxValue, mag, scaledMag);
+    inRange(scaledMag,0.5,4,outMag);
+    minMaxLoc(outMag, &minValue, &maxValue);
+    return outMag;
+
+
 }
 
 int main()
 {
-    Mat img,outColor,grad_x,grad_y,outDir ;
+    Mat img,outColor,grad_x,grad_y,outDir,outMag ;
     img = imread("undistorted.jpg");
     outColor = filter_color(img);
     Sobel( outColor, grad_x, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT );
     Sobel( outColor, grad_y, CV_64F, 0, 1, 3, 1, 0, BORDER_DEFAULT );
     outDir = dir_threshold(grad_x,grad_y);
-    magnitude_threshold(grad_x,grad_y);
+    outMag = magnitude_threshold(grad_x,grad_y);
     namedWindow( "test", CV_WINDOW_AUTOSIZE );
     namedWindow( "original", CV_WINDOW_AUTOSIZE );
-    imshow ("test",outDir);
+    imshow ("test",outMag);
     imshow("original",img);
     waitKey(0);
     return 0;
