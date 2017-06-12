@@ -18,8 +18,12 @@ Mat filter_color (Mat img)
 
 Mat dir_threshold(Mat sobelx, Mat sobely)
 {
-    Mat magnitude,angles;
-    cartToPolar( sobelx, sobely, magnitude, angles);
+    Mat magnitude,angles,absx,absy,outDir;
+    absx= abs(sobelx);
+    absy= abs(sobely);
+    cartToPolar( absx, absy, magnitude, angles);
+    inRange(angles,0.7,1.2,outDir);
+    return outDir;
 }
 int main()
 {
@@ -27,7 +31,9 @@ int main()
     img = imread("undistorted.jpg");
     out = filter_color(img);
     namedWindow( "test", CV_WINDOW_AUTOSIZE );
+    namedWindow( "original", CV_WINDOW_AUTOSIZE );
     imshow ("test",out);
+    imshow("original",img);
     waitKey(0);
     return 0;
 }
