@@ -40,6 +40,13 @@ Mat magnitude_threshold(Mat sobelx , Mat sobely)
 
 }
 
+void searchForLanes(Mat img)
+{
+    Mat outImg ;
+    cvtColor(img,outImg,CV_GRAY2RGB);
+
+}
+
 int main()
 {
     Mat img,outColor,grad_x,grad_y,outDir,outMag,combined ;
