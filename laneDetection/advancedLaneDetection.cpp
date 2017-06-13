@@ -44,7 +44,7 @@ void searchForLanes(Mat img)
 {
     Mat outImg,halfImg,hist ,midHist;
     double maxVal,minVal;
-    Point maxInd,minInd;
+    Point leftPoint,rightPoint,minInd;
     int nimages = 1;
     int channels[] = {0} ;
     int dims = 1;
@@ -60,12 +60,20 @@ void searchForLanes(Mat img)
     hist, dims, histSize, ranges,true,false);
     int midPoint = hist.rows/2;
     midHist =hist(Range(0,midPoint),Range(0,1));
-    minMaxLoc(midHist,&minVal,&maxVal,&minInd,&maxInd);
-    std::cout<<maxInd<<"\n";
+    minMaxLoc(midHist,&minVal,&maxVal,&minInd,&leftPoint);
+    //std::cout<<maxInd<<"\n";
     midHist = hist(Range(midPoint,hist.rows),Range(0,1));
-    minMaxLoc(midHist,&minVal,&maxVal,&minInd,&maxInd);
-    std::cout<<midHist<<"\n";
-    std::cout<<hist.rows<<" "<<hist.cols<<"\n";
+    minMaxLoc(midHist,&minVal,&maxVal,&minInd,&rightPoint);
+    //std::cout<<midHist<<"\n";
+    //std::cout<<hist.rows<<" "<<hist.cols<<"\n";
+    int numOfWindows = 9;
+    int windowsHeight = img.rows / numOfWindows ;
+    Mat nonZeroCoordinates,nonZeroX,nonZeroY;
+    findNonZero(img, nonZeroCoordinates);
+    nonZeroX = nonZeroCoordinates[1];
+    nonZeroY = nonZeroCoordinates[0];
+    int margin = 100 , minPix = 50 ;
+
 
 
 }
