@@ -42,8 +42,31 @@ Mat magnitude_threshold(Mat sobelx , Mat sobely)
 
 void searchForLanes(Mat img)
 {
-    Mat outImg ;
+    Mat outImg,halfImg,hist ,midHist;
+    double maxVal,minVal;
+    Point maxInd,minInd;
+    int nimages = 1;
+    int channels[] = {0} ;
+    int dims = 1;
+    int histSize[] = {256} ;
+    float hranges[] = { 0, 256 };
+    const float *ranges[] = {hranges};
     cvtColor(img,outImg,CV_GRAY2RGB);
+    halfImg = img (Range(0,img.rows/2),Range(0,img.cols));
+    calcHist(&img,
+    nimages,
+    channels,
+    Mat(), // No mask
+    hist, dims, histSize, ranges,true,false);
+    int midPoint = hist.rows/2;
+    midHist =hist(Range(0,midPoint),Range(0,1));
+    minMaxLoc(midHist,&minVal,&maxVal,&minInd,&maxInd);
+    std::cout<<maxInd<<"\n";
+    midHist = hist(Range(midPoint,hist.rows),Range(0,1));
+    minMaxLoc(midHist,&minVal,&maxVal,&minInd,&maxInd);
+    std::cout<<midHist<<"\n";
+    std::cout<<hist.rows<<" "<<hist.cols<<"\n";
+
 
 }
 
@@ -57,6 +80,7 @@ int main()
     outDir = dir_threshold(grad_x,grad_y);
     outMag = magnitude_threshold(grad_x,grad_y);
     combined = (outColor & (outMag | outDir));
+    searchForLanes(combined);
     namedWindow( "test", CV_WINDOW_AUTOSIZE );
     namedWindow( "original", CV_WINDOW_AUTOSIZE );
     imshow ("test",combined);
