@@ -81,9 +81,10 @@ void searchForLanes(Mat img)
 
 int main()
 {
-    Mat img,outColor,grad_x,grad_y,outDir,outMag,combined,warped;
+    Mat img,res,outColor,grad_x,grad_y,outDir,outMag,combined,warped;
     img = imread("undistorted.jpg");
-    outColor = filter_color(img);
+    resize(img, res, Size(img.cols * 0.5,img.rows * 0.5), 0, 0, CV_INTER_CUBIC);
+    outColor = filter_color(res);
     Sobel( outColor, grad_x, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT );
     Sobel( outColor, grad_y, CV_64F, 0, 1, 3, 1, 0, BORDER_DEFAULT );
     outDir = dir_threshold(grad_x,grad_y);
@@ -101,10 +102,8 @@ int main()
     warped = warp_image(combined,src,dst);
     imshow("warp",warped);
     searchForLanes(combined);
-    namedWindow( "test", CV_WINDOW_AUTOSIZE );
-    namedWindow( "original", CV_WINDOW_AUTOSIZE );
     imshow ("test",combined);
-    imshow("original",img);
+    imshow("original",res);
     waitKey(0);
     return 0;
 }
