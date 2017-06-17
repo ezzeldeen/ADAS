@@ -3,6 +3,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include <iostream>
+#include <vector>
 
 using namespace cv ;
 
@@ -59,21 +60,26 @@ void searchForLanes(Mat img)
     reduce(halfImg,hist,0,CV_REDUCE_SUM, CV_32SC1);
     midHist =hist(Range(0,1),Range(0,hist.cols/2));
     minMaxLoc(midHist,&minVal,&maxVal,&minInd,&leftPoint);
-    std::cout<<leftPoint<<" "<<img.rows<< " "<<img.cols;
-    //std::cout<<maxInd<<"\n";
     midHist = hist(Range(0,1),Range(hist.cols/2,hist.cols));
     minMaxLoc(midHist,&minVal,&maxVal,&minInd,&rightPoint);
-    //std::cout<<midHist<<"\n";
-    //std::cout<<hist.rows<<" "<<hist.cols<<"\n";
-    std::cout<<rightPoint<<" "<<img.rows<< " "<<img.cols<<"\n";
-    std::cout<<midHist;
-    int numOfWindows = 9;
-    int windowsHeight = img.rows / numOfWindows ;
-    Mat nonZeroCoordinates,nonZeroX,nonZeroY;
-    findNonZero(img, nonZeroCoordinates);
-    //nonZeroX = nonZeroCoordinates[1];
-    //nonZeroY = nonZeroCoordinates[0];
-    int margin = 100 , minPix = 50 ;
+    int left_point = leftPoint.x , right_point = rightPoint.x+(img.cols/2);
+    int numOfWindows = 9,margin=100;
+    int window_height = img.rows / numOfWindows ;
+    Mat nonZeroCoordinates;
+    vector<cv::Point> leftLane;
+    vector<cv::Point> rightLane;
+    findNonZero(img,nonZeroCoordinates);
+    Mat current_win ;
+    int win_y_low, win_y_high, win_left_x_low, win_left_x_high, win_right_x_low, win_right_x_high;
+    for(int i = 0 ; i < numOfWindows; i++)
+    {
+        win_y_low = img.rows - ((i+1)*window_height);
+        win_y_high = win_y_low + window_height ;
+        win_left_x_low = left_point - margin ;
+        win_left_x_high = left_point + margin ;
+        win_right_x_low = right_point - margin ;
+        win_right_x_high = right_point + margin;
+    }
 
 
 
@@ -101,7 +107,7 @@ int main()
     dst[3]= Point2f( 130, 310 );
     warped = warp_image(combined,src,dst);
     imshow("warp",warped);
-    searchForLanes(combined);
+    searchForLanes(warped);
     imshow ("test",combined);
     imshow("original",res);
     waitKey(0);
