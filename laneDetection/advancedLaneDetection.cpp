@@ -52,26 +52,24 @@ void searchForLanes(Mat img)
     float hranges[] = { 0, 256 };
     const float *ranges[] = {hranges};
     cvtColor(img,outImg,CV_GRAY2RGB);
-    halfImg = img (Range(0,img.rows/2),Range(0,img.cols));
-    calcHist(&img,
-    nimages,
-    channels,
-    Mat(), // No mask
-    hist, dims, histSize, ranges,true,false);
-    int midPoint = hist.rows/2;
-    midHist =hist(Range(0,midPoint),Range(0,1));
+    halfImg = img (Range(img.rows/2,img.rows),Range(0,img.cols));
+    reduce(halfImg,hist,0,CV_REDUCE_SUM, CV_32SC1);
+    midHist =hist(Range(0,1),Range(0,hist.cols/2));
     minMaxLoc(midHist,&minVal,&maxVal,&minInd,&leftPoint);
+    std::cout<<leftPoint<<" "<<img.rows<< " "<<img.cols;
     //std::cout<<maxInd<<"\n";
-    midHist = hist(Range(midPoint,hist.rows),Range(0,1));
+    midHist = hist(Range(0,1),Range(hist.cols/2,hist.cols));
     minMaxLoc(midHist,&minVal,&maxVal,&minInd,&rightPoint);
     //std::cout<<midHist<<"\n";
     //std::cout<<hist.rows<<" "<<hist.cols<<"\n";
+    std::cout<<rightPoint<<" "<<img.rows<< " "<<img.cols<<"\n";
+    std::cout<<midHist;
     int numOfWindows = 9;
     int windowsHeight = img.rows / numOfWindows ;
     Mat nonZeroCoordinates,nonZeroX,nonZeroY;
     findNonZero(img, nonZeroCoordinates);
-    nonZeroX = nonZeroCoordinates[1];
-    nonZeroY = nonZeroCoordinates[0];
+    //nonZeroX = nonZeroCoordinates[1];
+    //nonZeroY = nonZeroCoordinates[0];
     int margin = 100 , minPix = 50 ;
 
 
