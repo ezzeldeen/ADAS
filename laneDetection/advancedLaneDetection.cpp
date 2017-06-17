@@ -40,17 +40,20 @@ Mat magnitude_threshold(Mat sobelx , Mat sobely)
 
 }
 
+Mat warp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
+{
+    Mat M,warped;
+    M = getPerspectiveTransform(src_vertices,dst_vertices);
+    warpPerspective(img,warped, M,warped.size());
+    return warped;
+
+}
+
 void searchForLanes(Mat img)
 {
     Mat outImg,halfImg,hist ,midHist;
     double maxVal,minVal;
     Point leftPoint,rightPoint,minInd;
-    int nimages = 1;
-    int channels[] = {0} ;
-    int dims = 1;
-    int histSize[] = {256} ;
-    float hranges[] = { 0, 256 };
-    const float *ranges[] = {hranges};
     cvtColor(img,outImg,CV_GRAY2RGB);
     halfImg = img (Range(img.rows/2,img.rows),Range(0,img.cols));
     reduce(halfImg,hist,0,CV_REDUCE_SUM, CV_32SC1);
@@ -78,7 +81,7 @@ void searchForLanes(Mat img)
 
 int main()
 {
-    Mat img,outColor,grad_x,grad_y,outDir,outMag,combined ;
+    Mat img,outColor,grad_x,grad_y,outDir,outMag,combined,warped;
     img = imread("undistorted.jpg");
     outColor = filter_color(img);
     Sobel( outColor, grad_x, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT );
@@ -86,6 +89,17 @@ int main()
     outDir = dir_threshold(grad_x,grad_y);
     outMag = magnitude_threshold(grad_x,grad_y);
     combined = (outColor & (outMag | outDir));
+    Point2f src[4],dst[4];
+    src[0]=Point2f( 290, 230 );
+    src[1]=Point2f( 350, 230 );
+    src[2]=Point2f( 520, 340 );
+    src[3]=Point2f( 130, 340 );
+    dst[0]= Point2f( 130, 0 );
+    dst[1]= Point2f( 520, 0 );
+    dst[2]= Point2f( 520, 310);
+    dst[3]= Point2f( 130, 310 );
+    warped = warp_image(combined,src,dst);
+    imshow("warp",warped);
     searchForLanes(combined);
     namedWindow( "test", CV_WINDOW_AUTOSIZE );
     namedWindow( "original", CV_WINDOW_AUTOSIZE );
