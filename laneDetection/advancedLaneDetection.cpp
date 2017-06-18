@@ -52,14 +52,7 @@ Mat warp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
 
 }
 
-void draw(cv::Point *pts,Mat img)
-{
-  const Point* p= {pts[0]};
-  int npt[] = { 20 };
-  fillPoly( img, p, npt, 1, Scalar( 255, 255, 255 ), 8 );
-  imshow("test",img);
 
-}
 void searchForLanes(Mat img)
 {
     Mat outImg,halfImg,hist ,midHist;
@@ -100,10 +93,17 @@ void searchForLanes(Mat img)
             rightLane.insert(rightLane.end(), current_nonZero.begin(), current_nonZero.end());
             current_nonZero.clear();
         }
+        leftLane.insert(leftLane.end(), rightLane.begin(), rightLane.end());
+        const cv::Point *pts = (const cv::Point*) Mat(leftLane).data;
+        int npts = Mat(leftLane).rows;
+        std::cout<<"\n";
+        std::cout<<npts;
+        imshow("yaraaaaaaaaaab",img);
+        //fillPoly(img,&pts,&npts,1, Scalar( 255, 255, 255 ), 8);
+        //imshow("yaraaaaaaaaaaab",img);
+
     }
-    leftLane.insert(leftLane.end(), rightLane.begin(), rightLane.end());
-    cv::Point *pts = &leftLane[0];
-    draw(pts,img);
+
 }
 
 
