@@ -68,8 +68,7 @@ void searchForLanes(Mat img)
     Mat nonZeroCoordinates;
     vector<cv::Point> leftLane;
     vector<cv::Point> rightLane;
-    findNonZero(img,nonZeroCoordinates);
-    Mat current_win ;
+    vector<cv::Point> current_nonZero;
     int win_y_low, win_y_high, win_left_x_low, win_left_x_high, win_right_x_low, win_right_x_high;
     for(int i = 0 ; i < numOfWindows; i++)
     {
@@ -79,6 +78,13 @@ void searchForLanes(Mat img)
         win_left_x_high = left_point + margin ;
         win_right_x_low = right_point - margin ;
         win_right_x_high = right_point + margin;
+        findNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high)),current_nonZero);
+        leftLane.insert(leftLane.end(), current_nonZero.begin(), current_nonZero.end());
+        current_nonZero.clear();
+        findNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high)),current_nonZero);
+        rightLane.insert(rightLane.end(), current_nonZero.begin(), current_nonZero.end());
+        current_nonZero.clear();
+
     }
 
 
