@@ -52,6 +52,14 @@ Mat warp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
 
 }
 
+void draw(cv::Point *pts,Mat img)
+{
+  const Point* p= {pts[0]};
+  int npt[] = { 20 };
+  fillPoly( img, p, npt, 1, Scalar( 255, 255, 255 ), 8 );
+  imshow("test",img);
+
+}
 void searchForLanes(Mat img)
 {
     Mat outImg,halfImg,hist ,midHist;
@@ -72,7 +80,7 @@ void searchForLanes(Mat img)
     vector<cv::Point> rightLane;
     vector<cv::Point> current_nonZero;
     int win_y_low, win_y_high, win_left_x_low, win_left_x_high, win_right_x_low, win_right_x_high;
-    for(int i = 0 ; i < numOfWindows; i++)
+    for(int i = 0 ; i < 2; i++)
     {
         win_y_low = img.rows - ((i+1)*window_height);
         win_y_high = win_y_low + window_height ;
@@ -92,13 +100,14 @@ void searchForLanes(Mat img)
             rightLane.insert(rightLane.end(), current_nonZero.begin(), current_nonZero.end());
             current_nonZero.clear();
         }
-
     }
-           imshow("h",img);
-
-
-
+    leftLane.insert(leftLane.end(), rightLane.begin(), rightLane.end());
+    cv::Point *pts = &leftLane[0];
+    draw(pts,img);
 }
+
+
+
 
 int main()
 {
