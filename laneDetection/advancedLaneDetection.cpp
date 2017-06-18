@@ -4,6 +4,8 @@
 #include "stdio.h"
 #include <iostream>
 #include <vector>
+#include <string>
+
 
 using namespace cv ;
 
@@ -63,7 +65,7 @@ void searchForLanes(Mat img)
     midHist = hist(Range(0,1),Range(hist.cols/2,hist.cols));
     minMaxLoc(midHist,&minVal,&maxVal,&minInd,&rightPoint);
     int left_point = leftPoint.x , right_point = rightPoint.x+(img.cols/2);
-    int numOfWindows = 9,margin=100;
+    int numOfWindows = 9,margin=50;
     int window_height = img.rows / numOfWindows ;
     Mat nonZeroCoordinates;
     vector<cv::Point> leftLane;
@@ -78,14 +80,21 @@ void searchForLanes(Mat img)
         win_left_x_high = left_point + margin ;
         win_right_x_low = right_point - margin ;
         win_right_x_high = right_point + margin;
-        findNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high)),current_nonZero);
-        leftLane.insert(leftLane.end(), current_nonZero.begin(), current_nonZero.end());
-        current_nonZero.clear();
-        findNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high)),current_nonZero);
-        rightLane.insert(rightLane.end(), current_nonZero.begin(), current_nonZero.end());
-        current_nonZero.clear();
+        if(countNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high))))
+        {
+            findNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high)),current_nonZero);
+            leftLane.insert(leftLane.end(), current_nonZero.begin(), current_nonZero.end());
+            current_nonZero.clear();
+        }
+        if(countNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high))))
+        {
+            findNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high)),current_nonZero);
+            rightLane.insert(rightLane.end(), current_nonZero.begin(), current_nonZero.end());
+            current_nonZero.clear();
+        }
 
     }
+           imshow("h",img);
 
 
 
@@ -112,10 +121,10 @@ int main()
     dst[2]= Point2f( 520, 310);
     dst[3]= Point2f( 130, 310 );
     warped = warp_image(combined,src,dst);
-    imshow("warp",warped);
+    //imshow("warp",warped);
     searchForLanes(warped);
-    imshow ("test",combined);
-    imshow("original",res);
+    //imshow ("test",combined);
+   // imshow("original",res);
     waitKey(0);
     return 0;
 }
