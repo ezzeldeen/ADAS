@@ -52,6 +52,25 @@ Mat warp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
 
 }
 
+void polyFit(vector<cv::Point> points ,int degree)
+{
+    Mat x_vals , y_vals ;
+    for(int i = 0 ;i< points.size() ; i++)
+    {
+        y_vals[i] = points[i].y;
+        x_vals[i] = 1;
+        for(int j = 1 ;j < degree + 1 ;j++)
+        {
+            x_vals[i,j] = pow(points[i].x,j) ;
+
+        }
+
+    }
+
+
+
+
+}
 
 void searchForLanes(Mat img)
 {
