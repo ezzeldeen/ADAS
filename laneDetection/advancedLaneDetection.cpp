@@ -57,16 +57,17 @@ void polyFit(vector<cv::Point> points ,int degree)
     Mat x_vals , y_vals ;
     for(int i = 0 ;i< points.size() ; i++)
     {
-        y_vals[i] = points[i].y;
-        x_vals[i] = 1;
+        y_vals.at<int>(i) = points[i].y;
+        x_vals.at<int>(i)= 1;
         for(int j = 1 ;j < degree + 1 ;j++)
         {
-            x_vals[i,j] = pow(points[i].x,j) ;
+            x_vals.at<int>(i,j) = pow(points[i].x,j) ;
 
         }
-
     }
-
+    Mat first_term;
+    mulTransposed (x_vals,first_term,true);
+    invert(first_term,first_term,DECOMP_LU);
 
 
 
