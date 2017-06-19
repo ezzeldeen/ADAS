@@ -52,7 +52,7 @@ Mat warp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
 
 }
 
-void polyFit(vector<cv::Point> points ,int degree)
+Mat polyFit(vector<cv::Point> points ,int degree)
 {
     Mat x_vals , y_vals ;
     for(int i = 0 ;i< points.size() ; i++)
@@ -68,8 +68,10 @@ void polyFit(vector<cv::Point> points ,int degree)
     Mat first_term;
     mulTransposed (x_vals,first_term,true);
     invert(first_term,first_term,DECOMP_LU);
-
-
+    transpose(x_vals,x_vals);
+    Mat second_term = x_vals * y_vals;
+    Mat result = first_term * second_term ;
+    return result ;
 
 }
 
