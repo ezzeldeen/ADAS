@@ -123,7 +123,7 @@ void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat o
     midHist = hist(Range(0,1),Range(hist.cols/2,hist.cols));
     minMaxLoc(midHist,&minVal,&maxVal,&minInd,&rightPoint);
     int left_point = leftPoint.x , right_point = rightPoint.x+(img.cols/2);
-    int numOfWindows = 9,margin=50;
+    int numOfWindows = 9,margin=50,minPix=50;
     int window_height = img.rows / numOfWindows ;
     Mat leftLane,rightLane,current_nonZero;
     int win_y_low, win_y_high, win_left_x_low, win_left_x_high, win_right_x_low, win_right_x_high;
@@ -154,6 +154,7 @@ void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat o
         {
             findNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high)),current_nonZero);
             add(current_nonZero,Scalar(win_y_low,win_right_x_low),current_nonZero);
+
             if(flag == 1)
             {
                 rightLane = current_nonZero;
