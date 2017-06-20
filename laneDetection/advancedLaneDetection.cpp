@@ -102,12 +102,12 @@ void drawLane(Mat left , Mat right, Mat img, Point2f* src_vertices , Point2f* ds
     const cv::Point *pts = (const cv::Point*) Mat(pt).data;
 	int num_pts = Mat(pt).rows;
 	Mat colored;
-	colored = Mat::zeros(img.rows, img.cols, CV_32FC3);
+	colored = Mat::zeros(img.rows, img.cols, CV_8UC3);
 	Mat unwarped,out;
 	fillPoly(colored, &pts,&num_pts, 1,Scalar(0,255,0),8);
 	unwarped = unwarp_image(colored,src_vertices,dst_vertices);
-	//addWeighted(img,1, unwarped, 0.3, 0, out);
-    imshow("yaaaaaaaaaarb",unwarped);
+	addWeighted(img,1, unwarped, 0.3, 0, out);
+    imshow("yaaaaaaaaaarb",out);
 }
 
 void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat orignal_img)
