@@ -67,7 +67,6 @@ Mat polyFit(Mat &points ,int degree)
         }
         j=1;
     }
-    std::cout<<Mat(points);
     Mat x_transposed,first_term;
     transpose(x_vals,x_transposed);
     first_term = x_transposed * x_vals ;
@@ -82,22 +81,21 @@ Mat polyFit(Mat &points ,int degree)
 void drawLane(Mat left , Mat right, Mat img)
 {
     vector<cv::Point> pt;
-    int l ,r ;
-    for (int i = img.rows-1 ; i>img.rows/2 ;i--)
+    float l=0 ,r=0 ;
+    int i = img.rows-1;
+    for (i ; i> 0;i--)
     {
-        l = left.at<int>(0) * pow(i,2) + left.at<int>(1) * i + left.at<int>(2) ;
-        r = right.at<int>(0) * pow(i,2) + right.at<int>(1) * i + right.at<int>(2) ;
+        l = left.at<float>(2) * pow(i,2) + left.at<float>(1) * i + left.at<float>(0) ;
+        r = right.at<float>(2) * pow(i,2) + right.at<float>(1) * i + right.at<float>(0) ;
         pt.push_back((Point(l,i)));
         pt.push_back((Point(r,i)));
-
     }
-    std::cout<<left<<"\n";
     const cv::Point *pts = (const cv::Point*) Mat(pt).data;
-   // std::cout<<Mat(pt);
 	int num_pts = Mat(pt).rows;
 	Mat m1;
-	m1 = Mat::zeros(img.rows, img.cols, CV_8UC1);
-	fillPoly(m1, &pts,&num_pts, 1,Scalar(0,255,0),8);
+	m1 = Mat::zeros(img.rows, img.cols, CV_32FC1);
+    imshow("yaa",img);
+	fillPoly(m1, &pts,&num_pts, 1,Scalar(255,255,255),8);
     imshow("yaaaaaaaaaarb",m1);
 
 
@@ -163,9 +161,10 @@ void searchForLanes(Mat img)
         }
 
     }
-    //Mat left_fit = polyFit(leftLane,2);
-    //Mat right_fit = polyFit(rightLane,2);
-    //drawLane(left_fit , right_fit, img);
+    Mat left_fit = polyFit(leftLane,2);
+    Mat right_fit = polyFit(rightLane,2);
+    std::cout<<left_fit;
+    drawLane(left_fit , right_fit, img);
 
 }
 
