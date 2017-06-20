@@ -125,10 +125,7 @@ void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat o
     int left_point = leftPoint.x , right_point = rightPoint.x+(img.cols/2);
     int numOfWindows = 9,margin=50;
     int window_height = img.rows / numOfWindows ;
-    Mat nonZeroCoordinates;
-    Mat leftLane;
-    Mat rightLane;
-    Mat current_nonZero;
+    Mat leftLane,rightLane,current_nonZero;
     int win_y_low, win_y_high, win_left_x_low, win_left_x_high, win_right_x_low, win_right_x_high;
     int flag=0;
     for(int i = 0 ; i < numOfWindows; i++)
@@ -160,6 +157,7 @@ void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat o
             if(flag == 1)
             {
                 rightLane = current_nonZero;
+                flag++;
 
             }
             else
