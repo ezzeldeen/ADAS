@@ -52,17 +52,17 @@ Mat warp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
 
 }
 
-Mat polyFit(vector<cv::Point> &points ,int degree)
+Mat polyFit(Mat &points ,int degree)
 {
-    int numOfpts = points.size(), i=0, j=1;
+    int numOfpts = points.rows, i=0, j=1;
     Mat x_vals(numOfpts, degree+1,CV_32FC1) , y_vals(numOfpts,1,CV_32FC1) ;
     for(i  ;i< numOfpts ; i++)
     {
-        y_vals.at<float>(i,0,0) = points[i].y;
+        y_vals.at<float>(i,0,0) = points.at<Point>(i).y;
         x_vals.at<float>(i,0,0)= 1;
         for(j ;j < degree + 1 ;j++)
         {
-            x_vals.at<float>(i,j,0) = pow(int(points[i].x),j) ;
+            x_vals.at<float>(i,j,0) = pow(int(points.at<Point>(i).x),j) ;
 
         }
         j=1;
