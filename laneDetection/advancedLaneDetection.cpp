@@ -78,7 +78,7 @@ Mat polyFit(Mat &points ,int degree)
 
 }
 
-void drawLane(Mat left , Mat right, Mat img)
+void drawLane(Mat left , Mat right, Mat img, Point2f* src_vertices , Point2f* dst_vertices)
 {
     vector<cv::Point> pt;
     float l=0 ,r=0 ;
@@ -93,16 +93,17 @@ void drawLane(Mat left , Mat right, Mat img)
     const cv::Point *pts = (const cv::Point*) Mat(pt).data;
 	int num_pts = Mat(pt).rows;
 	Mat m1;
-	m1 = Mat::zeros(img.rows, img.cols, CV_32FC1);
-    imshow("yaa",img);
-	fillPoly(m1, &pts,&num_pts, 1,Scalar(255,255,255),8);
+	m1 = Mat::zeros(img.rows, img.cols, CV_32FC3);
+	Mat unwarped,out;
+	fillPoly(m1, &pts,&num_pts, 1,Scalar(0,255,0),8);
+	addWeighted(img,1, unwarped, 0.3, 0, out);
     imshow("yaaaaaaaaaarb",m1);
 
 
 
 }
 
-void searchForLanes(Mat img)
+void searchForLanes(Mat img,Point2f* src_vertices , Point2f* dst_vertices)
 {
     Mat outImg,halfImg,hist ,midHist;
     double maxVal,minVal;
@@ -163,8 +164,7 @@ void searchForLanes(Mat img)
     }
     Mat left_fit = polyFit(leftLane,2);
     Mat right_fit = polyFit(rightLane,2);
-    std::cout<<left_fit;
-    drawLane(left_fit , right_fit, img);
+    drawLane(left_fit , right_fit, img,src_vertices,dst_vertices);
 
 }
 
@@ -196,7 +196,7 @@ int main()
     dst[3]= Point2f( 130, 310 );
     warped = warp_image(combined,src,dst);
     //imshow("warp",warped);
-    searchForLanes(warped);
+    searchForLanes(warped,src,dst);
     //imshow ("test",combined);
    // imshow("original",res);
     waitKey(0);
