@@ -175,10 +175,11 @@ void searchForLanes(Mat img)
 
 int main()
 {
-    Mat img,res,outColor,grad_x,grad_y,outDir,outMag,combined,warped;
+    Mat img,res,outColor,grad_x,grad_y,outDir,outMag,combined,warped,HSV_img;
     img = imread("undistorted.jpg");
     resize(img, res, Size(img.cols * 0.5,img.rows * 0.5), 0, 0, CV_INTER_CUBIC);
-    outColor = filter_color(res);
+    cvtColor(res, HSV_img , CV_RGB2HSV);
+    outColor = filter_color(HSV_img);
     Sobel( outColor, grad_x, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT );
     Sobel( outColor, grad_y, CV_64F, 0, 1, 3, 1, 0, BORDER_DEFAULT );
     outDir = dir_threshold(grad_x,grad_y);
