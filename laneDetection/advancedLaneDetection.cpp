@@ -120,10 +120,11 @@ void searchForLanes(Mat img)
     int numOfWindows = 9,margin=50;
     int window_height = img.rows / numOfWindows ;
     Mat nonZeroCoordinates;
-    vector<cv::Point> leftLane;
-    vector<cv::Point> rightLane;
-    vector<cv::Point> current_nonZero;
+    Mat leftLane;
+    Mat rightLane;
+    Mat current_nonZero;
     int win_y_low, win_y_high, win_left_x_low, win_left_x_high, win_right_x_low, win_right_x_high;
+    int flag=0;
     for(int i = 0 ; i < numOfWindows; i++)
     {
         win_y_low = img.rows - ((i+1)*window_height);
@@ -135,20 +136,34 @@ void searchForLanes(Mat img)
         if(countNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high))))
         {
             findNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high)),current_nonZero);
-           // transform(current_nonZero.begin(), current_nonZero.end(), current_nonZero.begin(),bind2nd(std::plus<cv::Point>(), (win_y_low,win_left_x_low)));
-            leftLane.insert(leftLane.end(), current_nonZero.begin(), current_nonZero.end());
-            current_nonZero.clear();
+            add(current_nonZero,Scalar(win_y_low,win_left_x_low),current_nonZero);
+            if(!flag)
+            {
+                leftLane = current_nonZero;
+                flag++;
+            }
+            else
+            {
+                vconcat(leftLane, current_nonZero, leftLane);
+            }
         }
         if(countNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high))))
         {
             findNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high)),current_nonZero);
-            transform(current_nonZero.begin(), current_nonZero.end(), current_nonZero.begin(),bind2nd(std::plus<cv::Point>(), (win_y_low,win_right_x_low)));
-            rightLane.insert(rightLane.end(), current_nonZero.begin(), current_nonZero.end());
-            current_nonZero.clear();
+            add(current_nonZero,Scalar(win_y_low,win_right_x_low),current_nonZero);
+            if(flag == 1)
+            {
+                rightLane = current_nonZero;
+
+            }
+            else
+            {
+                vconcat(rightLane, current_nonZero, rightLane);
+            }
         }
 
     }
-    Mat left_fit = polyFit(leftLane,2);
+    //Mat left_fit = polyFit(leftLane,2);
     //Mat right_fit = polyFit(rightLane,2);
     //drawLane(left_fit , right_fit, img);
 
