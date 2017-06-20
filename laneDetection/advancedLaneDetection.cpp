@@ -55,26 +55,52 @@ Mat warp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
 Mat polyFit(vector<cv::Point> &points ,int degree)
 {
     int numOfpts = points.size(), i=0, j=1;
-    Mat x_vals(numOfpts, degree+1,CV_64FC1) , y_vals(numOfpts,1,CV_64FC1) ;
+    Mat x_vals(numOfpts, degree+1,CV_32FC1) , y_vals(numOfpts,1,CV_32FC1) ;
     for(i  ;i< numOfpts ; i++)
     {
-        y_vals.at<int>(i,0,0) = int(points[i].y);
-        x_vals.at<int>(i,0,0)= 1;
+        y_vals.at<float>(i,0,0) = points[i].y;
+        x_vals.at<float>(i,0,0)= 1;
         for(j ;j < degree + 1 ;j++)
         {
-            x_vals.at<int>(i,j,0) = pow(int(points[i].x),j) ;
+            x_vals.at<float>(i,j,0) = pow(int(points[i].x),j) ;
 
         }
         j=1;
     }
-    Mat first_term(degree+1 , degree+1, CV_64FC1);
-    mulTransposed (x_vals,first_term,true);
+    std::cout<<Mat(points);
+    Mat x_transposed,first_term;
+    transpose(x_vals,x_transposed);
+    first_term = x_transposed * x_vals ;
     invert(first_term,first_term,DECOMP_LU);
-    transpose(x_vals,x_vals);
-    Mat second_term(degree+1 , 1, CV_64FC1) ;
-    second_term = x_vals * y_vals;
-    Mat result = first_term * second_term ;
+    Mat second_term;
+    second_term = first_term * x_transposed;
+    Mat result =  second_term * y_vals;
     return result ;
+
+}
+
+void drawLane(Mat left , Mat right, Mat img)
+{
+    vector<cv::Point> pt;
+    int l ,r ;
+    for (int i = img.rows-1 ; i>img.rows/2 ;i--)
+    {
+        l = left.at<int>(0) * pow(i,2) + left.at<int>(1) * i + left.at<int>(2) ;
+        r = right.at<int>(0) * pow(i,2) + right.at<int>(1) * i + right.at<int>(2) ;
+        pt.push_back((Point(l,i)));
+        pt.push_back((Point(r,i)));
+
+    }
+    std::cout<<left<<"\n";
+    const cv::Point *pts = (const cv::Point*) Mat(pt).data;
+   // std::cout<<Mat(pt);
+	int num_pts = Mat(pt).rows;
+	Mat m1;
+	m1 = Mat::zeros(img.rows, img.cols, CV_8UC1);
+	fillPoly(m1, &pts,&num_pts, 1,Scalar(0,255,0),8);
+    imshow("yaaaaaaaaaarb",m1);
+
+
 
 }
 
@@ -98,7 +124,7 @@ void searchForLanes(Mat img)
     vector<cv::Point> rightLane;
     vector<cv::Point> current_nonZero;
     int win_y_low, win_y_high, win_left_x_low, win_left_x_high, win_right_x_low, win_right_x_high;
-    for(int i = 0 ; i < 2; i++)
+    for(int i = 0 ; i < numOfWindows; i++)
     {
         win_y_low = img.rows - ((i+1)*window_height);
         win_y_high = win_y_low + window_height ;
@@ -109,22 +135,26 @@ void searchForLanes(Mat img)
         if(countNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high))))
         {
             findNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high)),current_nonZero);
+           // transform(current_nonZero.begin(), current_nonZero.end(), current_nonZero.begin(),bind2nd(std::plus<cv::Point>(), (win_y_low,win_left_x_low)));
             leftLane.insert(leftLane.end(), current_nonZero.begin(), current_nonZero.end());
             current_nonZero.clear();
         }
         if(countNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high))))
         {
             findNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high)),current_nonZero);
+            transform(current_nonZero.begin(), current_nonZero.end(), current_nonZero.begin(),bind2nd(std::plus<cv::Point>(), (win_y_low,win_right_x_low)));
             rightLane.insert(rightLane.end(), current_nonZero.begin(), current_nonZero.end());
             current_nonZero.clear();
         }
 
     }
     Mat left_fit = polyFit(leftLane,2);
-    Mat right_fit = polyFit(rightLane,2);
-    std::cout<<left_fit<<"\n"<<right_fit;
+    //Mat right_fit = polyFit(rightLane,2);
+    //drawLane(left_fit , right_fit, img);
 
 }
+
+
 
 
 
