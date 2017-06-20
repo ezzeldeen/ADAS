@@ -14,8 +14,6 @@ def filter_color(img):
     white_mask = cv2.inRange(img, white_min, white_max)
     binary_output = np.zeros_like(img[:, :, 0])
     binary_output[((yellow_mask != 0) | (white_mask != 0))] = 1
-    filtered = img
-    filtered[((yellow_mask == 0) & (white_mask == 0))] = 0
     return binary_output
 
 def dir_threshold (sobelx ,sobely):
@@ -31,15 +29,17 @@ def magnitude_threshold (sobelx ,sobely):
     factor = np.max(gradientMag)/255
     gradientMag = (gradientMag/factor).astype(np.uint8)
     binary_out = np.zeros_like(gradientMag)
-    binary_out [(gradientMag>50) & (gradientMag<255)] =1    
+    binary_out [(gradientMag>50) & (gradientMag<255)] =1
     return binary_out
     
 def warp_image (img , src , dst ):
     M = cv2.getPerspectiveTransform(src, dst)
+    #cv2.imshow("warped",cv2.warpPerspective(img ,M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR))
     return cv2.warpPerspective(img ,M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
     
 def unwarp_image (img , src ,dst):
      M = cv2.getPerspectiveTransform(dst,src)
+     #cv2.imshow("unwarped",cv2.warpPerspective(img ,M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR))
      return cv2.warpPerspective(img ,M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
     
 def slope(line):
@@ -48,19 +48,17 @@ def slope(line):
 
 def weighted_img(img, initial_img, alpha=1., bita=1., gamma=0.):
     return cv2.addWeighted(initial_img, alpha, img,bita,gamma)
+
 cap = cv2.VideoCapture("project_video.mp4")
-out = cv2.VideoWriter('output.avi', -1, 20.0, (640,360))
 
 while(True):
     
     ret, frame = cap.read()    
-    #convert image to HSV
+    # convert image to HSV
+    # frame = cv2.imread("images/undistorted.jpg")    
     height , width = frame.shape[:2]
     res = cv2.resize(frame,(width/2, height/2), interpolation = cv2.INTER_CUBIC)
     image = cv2.cvtColor(res , cv2.COLOR_RGB2HSV)
-    
-    #apply gaussian blur to remove noise
-    image = cv2.GaussianBlur(image,(3,3),0)
     
     #filter image 
     sobelx = cv2.Sobel(res[:, :, 2], cv2.CV_64F, 1, 0, ksize=15)
@@ -70,7 +68,7 @@ while(True):
     color = filter_color(image)
     combined = np.zeros_like(dirc)
     combined[(( color == 1) & (( mag == 1 ) | ( dirc == 1)))] = 1
-    
+    #cv2.imshow("combined",combined)
     #perspective transform
     src = np.float32([[290, 230],
                 [350, 230],
@@ -85,13 +83,15 @@ while(True):
     unwarped = unwarp_image(warped,src,dst)
     lx,lxf,rx,rxf =fl.search_for_lane(warped)
     o = dr.draw(res,lx,lxf,rx,rxf,src,dst)
-    out.write(o)
-    cv2.imshow('frame',o)
+    #out.write(o)
+    #cv2.imshow('original',res)
+    cv2.imshow('output',o)
+    print("--- %s seconds ---" % (time.time() - start_time))
     if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-out.release()    
+         break
+    #out.release()    
 cap.release()
+cv2.waitKey(0);
 cv2.destroyAllWindows()
-print("--- %s seconds ---" % (time.time() - start_time))
 
     
