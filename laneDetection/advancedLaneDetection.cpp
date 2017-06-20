@@ -52,6 +52,15 @@ Mat warp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
 
 }
 
+Mat unwarp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
+{
+    Mat M,warped;
+    M = getPerspectiveTransform(dst_vertices,src_vertices);
+    warpPerspective(img,warped, M,warped.size());
+    return warped;
+
+}
+
 Mat polyFit(Mat &points ,int degree)
 {
     int numOfpts = points.rows, i=0, j=1;
@@ -92,18 +101,16 @@ void drawLane(Mat left , Mat right, Mat img, Point2f* src_vertices , Point2f* ds
     }
     const cv::Point *pts = (const cv::Point*) Mat(pt).data;
 	int num_pts = Mat(pt).rows;
-	Mat m1;
-	m1 = Mat::zeros(img.rows, img.cols, CV_32FC3);
+	Mat colored;
+	colored = Mat::zeros(img.rows, img.cols, CV_32FC3);
 	Mat unwarped,out;
-	fillPoly(m1, &pts,&num_pts, 1,Scalar(0,255,0),8);
-	addWeighted(img,1, unwarped, 0.3, 0, out);
-    imshow("yaaaaaaaaaarb",m1);
-
-
-
+	fillPoly(colored, &pts,&num_pts, 1,Scalar(0,255,0),8);
+	unwarped = unwarp_image(colored,src_vertices,dst_vertices);
+	//addWeighted(img,1, unwarped, 0.3, 0, out);
+    imshow("yaaaaaaaaaarb",unwarped);
 }
 
-void searchForLanes(Mat img,Point2f* src_vertices , Point2f* dst_vertices)
+void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat orignal_img)
 {
     Mat outImg,halfImg,hist ,midHist;
     double maxVal,minVal;
@@ -164,7 +171,7 @@ void searchForLanes(Mat img,Point2f* src_vertices , Point2f* dst_vertices)
     }
     Mat left_fit = polyFit(leftLane,2);
     Mat right_fit = polyFit(rightLane,2);
-    drawLane(left_fit , right_fit, img,src_vertices,dst_vertices);
+    drawLane(left_fit , right_fit, orignal_img,src_vertices,dst_vertices);
 
 }
 
@@ -196,7 +203,7 @@ int main()
     dst[3]= Point2f( 130, 310 );
     warped = warp_image(combined,src,dst);
     //imshow("warp",warped);
-    searchForLanes(warped,src,dst);
+    searchForLanes(warped,src,dst,res);
     //imshow ("test",combined);
    // imshow("original",res);
     waitKey(0);
