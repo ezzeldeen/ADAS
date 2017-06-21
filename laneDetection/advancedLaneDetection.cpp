@@ -190,6 +190,7 @@ int main()
     Mat res,outColor,grad_x,grad_y,outDir,outMag,combined,warped,HSV_img;//,frame;
     //VideoCapture capture("project_video.mp4");
     Mat frame = imread("undistorted.jpg");
+
    /* if( !capture.isOpened() )
         throw "Error when reading steam_avi";
 
