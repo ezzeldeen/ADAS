@@ -107,7 +107,7 @@ void drawLane(Mat left , Mat right, Mat img, Point2f* src_vertices , Point2f* ds
 	fillPoly(colored, &pts,&num_pts, 1,Scalar(0,255,0),8);
 	unwarped = unwarp_image(colored,src_vertices,dst_vertices);
 	addWeighted(img,1, unwarped, 0.3, 0, out);
-    imshow("yaaaaaaaaaarb",out);
+    imshow("output",out);
 }
 
 void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat orignal_img)
@@ -123,7 +123,7 @@ void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat o
     midHist = hist(Range(0,1),Range(hist.cols/2,hist.cols));
     minMaxLoc(midHist,&minVal,&maxVal,&minInd,&rightPoint);
     int left_point = leftPoint.x , right_point = rightPoint.x+(img.cols/2);
-    int numOfWindows = 9,margin=50,minPix=50;
+    int numOfWindows = 9,margin=50;
     int window_height = img.rows / numOfWindows ;
     Mat leftLane,rightLane,current_nonZero;
     int win_y_low, win_y_high, win_left_x_low, win_left_x_high, win_right_x_low, win_right_x_high;
@@ -132,10 +132,12 @@ void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat o
     {
         win_y_low = img.rows - ((i+1)*window_height);
         win_y_high = win_y_low + window_height ;
+        if(right_point > 590) right_point =590;
         win_left_x_low = left_point - margin ;
         win_left_x_high = left_point + margin ;
         win_right_x_low = right_point - margin ;
         win_right_x_high = right_point + margin;
+
         if(countNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high))))
         {
             findNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high)),current_nonZero);
@@ -149,6 +151,7 @@ void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat o
             {
                 vconcat(leftLane, current_nonZero, leftLane);
             }
+          //  left_point = mean(current_nonZero)[1];
         }
         if(countNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high))))
         {
@@ -165,6 +168,8 @@ void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat o
             {
                 vconcat(rightLane, current_nonZero, rightLane);
             }
+
+           //right_point = mean(current_nonZero)[1];
         }
 
     }
@@ -181,30 +186,44 @@ void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat o
 
 int main()
 {
-    Mat img,res,outColor,grad_x,grad_y,outDir,outMag,combined,warped,HSV_img;
-    img = imread("undistorted.jpg");
-    resize(img, res, Size(img.cols * 0.5,img.rows * 0.5), 0, 0, CV_INTER_CUBIC);
-    cvtColor(res, HSV_img , CV_RGB2HSV);
-    outColor = filter_color(HSV_img);
-    Sobel( outColor, grad_x, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT );
-    Sobel( outColor, grad_y, CV_64F, 0, 1, 3, 1, 0, BORDER_DEFAULT );
-    outDir = dir_threshold(grad_x,grad_y);
-    outMag = magnitude_threshold(grad_x,grad_y);
-    combined = (outColor & (outMag | outDir));
-    Point2f src[4],dst[4];
-    src[0]=Point2f( 290, 230 );
-    src[1]=Point2f( 350, 230 );
-    src[2]=Point2f( 520, 340 );
-    src[3]=Point2f( 130, 340 );
-    dst[0]= Point2f( 130, 0 );
-    dst[1]= Point2f( 520, 0 );
-    dst[2]= Point2f( 520, 310);
-    dst[3]= Point2f( 130, 310 );
-    warped = warp_image(combined,src,dst);
-    //imshow("warp",warped);
-    searchForLanes(warped,src,dst,res);
+    Mat res,outColor,grad_x,grad_y,outDir,outMag,combined,warped,HSV_img,frame;
+    VideoCapture capture("project_video.mp4");
+    //Mat frame = imread("noise.jpg");
+    if( !capture.isOpened() )
+        throw "Error when reading steam_avi";
+
+    namedWindow( "w", 1);
+    for( ; ; )
+    {
+        capture >> frame;
+        if(frame.empty())
+            break;
+        resize(frame, res, Size(frame.cols * 0.5,frame.rows * 0.5), 0, 0, CV_INTER_CUBIC);
+        cvtColor(res, HSV_img , CV_RGB2HSV);
+        outColor = filter_color(HSV_img);
+        Sobel( outColor, grad_x, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT );
+        Sobel( outColor, grad_y, CV_64F, 0, 1, 3, 1, 0, BORDER_DEFAULT );
+        outDir = dir_threshold(grad_x,grad_y);
+        outMag = magnitude_threshold(grad_x,grad_y);
+        combined = (outColor & (outMag | outDir));
+        Point2f src[4],dst[4];
+        src[0]=Point2f( 290, 230 );
+        src[1]=Point2f( 350, 230 );
+        src[2]=Point2f( 520, 340 );
+        src[3]=Point2f( 130, 340 );
+        dst[0]= Point2f( 130, 0 );
+        dst[1]= Point2f( 520, 0 );
+        dst[2]= Point2f( 520, 360);
+        dst[3]= Point2f( 130, 360 );
+        warped = warp_image(combined,src,dst);
+        //imshow("warp",warped);
+        searchForLanes(warped,src,dst,res);
     //imshow ("test",combined);
-   // imshow("original",res);
-    waitKey(0);
+        waitKey(20); // waits to display frame
+    }
+
+    waitKey(0); // key p
+    //img = imread("undistorted.jpg");
+     // imshow("original",res);
     return 0;
 }
