@@ -52,33 +52,65 @@ Mat warp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
 
 }
 
-Mat polyFit(vector<cv::Point> &points ,int degree)
+Mat unwarp_image(Mat img, Point2f* src_vertices , Point2f* dst_vertices)
 {
-    int numOfpts = points.size(), i=0, j=1;
-    Mat x_vals(numOfpts, degree+1,CV_64FC1) , y_vals(numOfpts,1,CV_64FC1) ;
+    Mat M,warped;
+    M = getPerspectiveTransform(dst_vertices,src_vertices);
+    warpPerspective(img,warped, M,warped.size());
+    return warped;
+
+}
+
+Mat polyFit(Mat &points ,int degree)
+{
+    int numOfpts = points.rows, i=0, j=1;
+    Mat x_vals(numOfpts, degree+1,CV_32FC1) , y_vals(numOfpts,1,CV_32FC1) ;
     for(i  ;i< numOfpts ; i++)
     {
-        y_vals.at<int>(i,0,0) = int(points[i].y);
-        x_vals.at<int>(i,0,0)= 1;
+        y_vals.at<float>(i,0,0) = points.at<Point>(i).y;
+        x_vals.at<float>(i,0,0)= 1;
         for(j ;j < degree + 1 ;j++)
         {
-            x_vals.at<int>(i,j,0) = pow(int(points[i].x),j) ;
+            x_vals.at<float>(i,j,0) = pow(int(points.at<Point>(i).x),j) ;
 
         }
         j=1;
     }
-    Mat first_term(degree+1 , degree+1, CV_64FC1);
-    mulTransposed (x_vals,first_term,true);
+    Mat x_transposed,first_term;
+    transpose(x_vals,x_transposed);
+    first_term = x_transposed * x_vals ;
     invert(first_term,first_term,DECOMP_LU);
-    transpose(x_vals,x_vals);
-    Mat second_term(degree+1 , 1, CV_64FC1) ;
-    second_term = x_vals * y_vals;
-    Mat result = first_term * second_term ;
+    Mat second_term;
+    second_term = first_term * x_transposed;
+    Mat result =  second_term * y_vals;
     return result ;
 
 }
 
-void searchForLanes(Mat img)
+void drawLane(Mat left , Mat right, Mat img, Point2f* src_vertices , Point2f* dst_vertices)
+{
+    vector<cv::Point> pt;
+    float l=0 ,r=0 ;
+    int i = img.rows-1;
+    for (i ; i> 0;i--)
+    {
+        l = left.at<float>(2) * pow(i,2) + left.at<float>(1) * i + left.at<float>(0) ;
+        r = right.at<float>(2) * pow(i,2) + right.at<float>(1) * i + right.at<float>(0) ;
+        pt.push_back((Point(l,i)));
+        pt.push_back((Point(r,i)));
+    }
+    const cv::Point *pts = (const cv::Point*) Mat(pt).data;
+	int num_pts = Mat(pt).rows;
+	Mat colored;
+	colored = Mat::zeros(img.rows, img.cols, CV_8UC3);
+	Mat unwarped,out;
+	fillPoly(colored, &pts,&num_pts, 1,Scalar(0,255,0),8);
+	unwarped = unwarp_image(colored,src_vertices,dst_vertices);
+	addWeighted(img,1, unwarped, 0.3, 0, out);
+    imshow("output",out);
+}
+
+void searchForLanes(Mat img, Point2f* src_vertices , Point2f* dst_vertices,Mat orignal_img)
 {
     Mat outImg,halfImg,hist ,midHist;
     double maxVal,minVal;
@@ -93,48 +125,84 @@ void searchForLanes(Mat img)
     int left_point = leftPoint.x , right_point = rightPoint.x+(img.cols/2);
     int numOfWindows = 9,margin=50;
     int window_height = img.rows / numOfWindows ;
-    Mat nonZeroCoordinates;
-    vector<cv::Point> leftLane;
-    vector<cv::Point> rightLane;
-    vector<cv::Point> current_nonZero;
+    Mat leftLane,rightLane,current_nonZero;
     int win_y_low, win_y_high, win_left_x_low, win_left_x_high, win_right_x_low, win_right_x_high;
-    for(int i = 0 ; i < 2; i++)
+    int flag=0;
+    for(int i = 0 ; i < numOfWindows; i++)
     {
         win_y_low = img.rows - ((i+1)*window_height);
         win_y_high = win_y_low + window_height ;
+        if(right_point > 590) right_point =590;
         win_left_x_low = left_point - margin ;
         win_left_x_high = left_point + margin ;
         win_right_x_low = right_point - margin ;
         win_right_x_high = right_point + margin;
         if(countNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high))))
         {
-            findNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high)),current_nonZero);
-            leftLane.insert(leftLane.end(), current_nonZero.begin(), current_nonZero.end());
-            current_nonZero.clear();
+           findNonZero(img(Range(win_y_low,win_y_high),Range(win_left_x_low,win_left_x_high)),current_nonZero);
+           add(current_nonZero,Scalar(win_y_low,win_left_x_low),current_nonZero);
+            if(!flag)
+            {
+
+                leftLane = current_nonZero;
+                flag++;
+            }
+            else
+            {
+
+                vconcat(leftLane, current_nonZero, leftLane);
+            }
+          //  left_point = mean(current_nonZero)[1];
         }
         if(countNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high))))
         {
             findNonZero(img(Range(win_y_low,win_y_high),Range(win_right_x_low,win_right_x_high)),current_nonZero);
-            rightLane.insert(rightLane.end(), current_nonZero.begin(), current_nonZero.end());
-            current_nonZero.clear();
+            add(current_nonZero,Scalar(win_y_low,win_right_x_low),current_nonZero);
+
+            if(flag == 1)
+            {
+                rightLane = current_nonZero;
+                flag++;
+
+            }
+            else
+            {
+                vconcat(rightLane, current_nonZero, rightLane);
+            }
+
+           //right_point = mean(current_nonZero)[1];
         }
 
     }
     Mat left_fit = polyFit(leftLane,2);
     Mat right_fit = polyFit(rightLane,2);
-    std::cout<<left_fit<<"\n"<<right_fit;
+    drawLane(left_fit , right_fit, orignal_img,src_vertices,dst_vertices);
 
 }
 
 
 
 
+
+
 int main()
 {
-    Mat img,res,outColor,grad_x,grad_y,outDir,outMag,combined,warped;
-    img = imread("undistorted.jpg");
-    resize(img, res, Size(img.cols * 0.5,img.rows * 0.5), 0, 0, CV_INTER_CUBIC);
-    outColor = filter_color(res);
+    Mat res,outColor,grad_x,grad_y,outDir,outMag,combined,warped,HSV_img;//,frame;
+    //VideoCapture capture("project_video.mp4");
+    Mat frame = imread("undistorted.jpg");
+
+   /* if( !capture.isOpened() )
+        throw "Error when reading steam_avi";
+
+    namedWindow( "w", 1);
+    for( ; ; )
+    {
+        capture >> frame;
+        if(frame.empty())
+            break;*/
+    resize(frame, res, Size(frame.cols * 0.5,frame.rows * 0.5), 0, 0, CV_INTER_CUBIC);
+    cvtColor(res, HSV_img , CV_RGB2HSV);
+    outColor = filter_color(HSV_img);
     Sobel( outColor, grad_x, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT );
     Sobel( outColor, grad_y, CV_64F, 0, 1, 3, 1, 0, BORDER_DEFAULT );
     outDir = dir_threshold(grad_x,grad_y);
@@ -147,13 +215,17 @@ int main()
     src[3]=Point2f( 130, 340 );
     dst[0]= Point2f( 130, 0 );
     dst[1]= Point2f( 520, 0 );
-    dst[2]= Point2f( 520, 310);
-    dst[3]= Point2f( 130, 310 );
+    dst[2]= Point2f( 520, 360);
+    dst[3]= Point2f( 130, 360 );
     warped = warp_image(combined,src,dst);
     //imshow("warp",warped);
-    searchForLanes(warped);
+    searchForLanes(warped,src,dst,res);
     //imshow ("test",combined);
-   // imshow("original",res);
-    waitKey(0);
+       // waitKey(20); // waits to display frame
+   // }
+
+    waitKey(0); // key p
+    //img = imread("undistorted.jpg");
+     // imshow("original",res);
     return 0;
 }
